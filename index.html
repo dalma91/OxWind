@@ -1,607 +1,308 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>Nano 제어보드 배선도</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>바늘구멍으로 황소바람이 들어올까? — 한지창 실험 장치 설계</title>
+<meta name="description" content="한지창 구멍 크기에 따른 열 손실과 공기 교환을 재는 고등학교 R&E 실험 장치의 설계 문서와 3D 모델.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: 기판 지도 → 커넥터 카드(기판 커넥터 실물 모양 · 맞물리는 하우징 · 전선 · 장치 쪽 커넥터/부품 모양) → 케이블 준비물 → Nano 핀표 */
 :root{
-  --bg:#f3f5f2; --paper:#ffffff; --ink:#1b211d; --muted:#5d6a62; --line:#cfd8d1;
-  --board:#1f5c3a; --board-ink:#e9f3ec; --pad:#c9a227; --accent:#1f7a4d; --warn:#b4531a; --warn-bg:#fdf1e7;
-  --w-12v:#e0a800; --w-5v:#d7263d; --w-gnd:#1b1b1b; --w-tx:#23955a; --w-rx:#2f6fd6; --w-dq:#e0a800;
-  --w-plug:#8a948e; --nc:#aab3ad;
-  --nylon:#f2ecdc; --nylon-edge:#9c927a; --hdr:#262a28; --hdr-edge:#000; --metal:#b9bfbc; --term:#2f8f5b; --modpcb:#1d4fa3; --steel:#c7ccca;
-  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --bg:#F3F4F1; --panel:#FBFBF9; --ink:#1C2426; --muted:#5D6A6C; --line:#D3D8D4;
+  --accent:#B8452F; --cold:#2F6F9F; --warm:#C0702A; --ok:#2E7D4F; --chip:#E8ECE8; --mark:#FFF4D6;
+  --f-display:"Gowun Batang","Nanum Myeongjo",Georgia,serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#131815; --paper:#1b221e; --ink:#e4ebe6; --muted:#9fb0a6; --line:#33413a;
-  --board:#245f3f; --board-ink:#e9f3ec; --pad:#d6b23c; --accent:#5cc28c; --warn:#f0a066; --warn-bg:#3a2619;
-  --w-gnd:#c9cfcb; --w-plug:#7f8a84; --nc:#5a665f;
-  --nylon:#d9d1bd; --nylon-edge:#6d6656; --hdr:#0c0e0d; --hdr-edge:#55605a; --metal:#8f9793; --term:#2b7d51; --modpcb:#2a5bb3; --steel:#9aa19e; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#131815; --paper:#1b221e; --ink:#e4ebe6; --muted:#9fb0a6; --line:#33413a;
-  --board:#245f3f; --board-ink:#e9f3ec; --pad:#d6b23c; --accent:#5cc28c; --warn:#f0a066; --warn-bg:#3a2619;
-  --w-gnd:#c9cfcb; --w-plug:#7f8a84; --nc:#5a665f;
-  --nylon:#d9d1bd; --nylon-edge:#6d6656; --hdr:#0c0e0d; --hdr-edge:#55605a; --metal:#8f9793; --term:#2b7d51; --modpcb:#2a5bb3; --steel:#9aa19e; color-scheme:dark}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
-.wrap{max-width:1080px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
-header h1{font-size:28px;margin:0;text-wrap:balance;letter-spacing:-.01em}
-header p{margin:6px 0 0;color:var(--muted);max-width:70ch}
-.meta{font-family:var(--f-mono);font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
-h2{font-size:19px;margin:0 0 4px;text-wrap:balance}
-.section{display:grid;gap:14px}
-.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:18px}
-.scroll{overflow-x:auto}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#121719; --panel:#1A2124; --ink:#E4EAEA; --muted:#93A2A4; --line:#2E393C;
+  --accent:#E07357; --cold:#6FA8D6; --warm:#E0A060; --ok:#5FB884; --chip:#243034; --mark:#3a3420; color-scheme:dark}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15.5px;line-height:1.7}
+a{color:var(--cold)}
+.wrap{max-width:980px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left))}
+header.hero{padding:44px 0 26px;border-bottom:1px solid var(--line)}
+.kicker{font-size:12.5px;font-weight:600;letter-spacing:.12em;color:var(--accent);text-transform:uppercase;margin:0 0 8px}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,5vw,42px);line-height:1.25;margin:0 0 12px;text-wrap:balance}
+.lede{font-size:17px;color:var(--muted);max-width:62ch;margin:0}
+.meta{font-size:13px;color:var(--muted);margin-top:14px}
+nav.toc{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+nav.toc .wrap{display:flex;gap:4px;overflow-x:auto;padding-top:8px;padding-bottom:8px;scrollbar-width:none}
+nav.toc a{flex:none;font-size:13.5px;text-decoration:none;color:var(--ink);padding:5px 11px;border-radius:999px;border:1px solid transparent}
+nav.toc a:hover{border-color:var(--line);background:var(--panel)}
+section{padding:34px 0 8px}
+h2{font-family:var(--f-display);font-size:26px;margin:0 0 6px;font-weight:700}
+h2 small{font-family:var(--f-body);font-size:13px;color:var(--muted);font-weight:500;margin-left:8px}
+h3{font-size:16.5px;margin:22px 0 6px}
+p{margin:0 0 12px}
+.notice{background:var(--mark);border:1px solid color-mix(in srgb,var(--warm) 50%,var(--line));border-radius:10px;padding:12px 16px;margin:18px 0 0;font-size:14.5px}
+.notice b{color:var(--accent)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:14px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card h4{margin:0 0 4px;font-size:15px}
+.card p{margin:0;font-size:14px;color:var(--muted)}
+.card .big{font-family:var(--f-mono);font-size:22px;color:var(--ink);font-weight:500}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.btn{display:inline-block;text-decoration:none;font-size:14px;font-weight:600;padding:9px 15px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.btn.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tbl{overflow-x:auto;margin:10px 0 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12.5px;color:var(--muted);font-weight:600;background:color-mix(in srgb,var(--chip) 60%,transparent)}
+tr:last-child td{border-bottom:0}
+td.num,.mono{font-family:var(--f-mono);font-size:13.5px;white-space:nowrap}
+.tag{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:999px;border:1px solid var(--line)}
+.tag.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
+.tag.wip{color:var(--warm);border-color:color-mix(in srgb,var(--warm) 45%,var(--line))}
+.tag.todo{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+ul,ol{margin:0 0 12px;padding-left:22px}
+li{margin-bottom:4px}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin:12px 0}
+.fig svg{width:100%;height:auto;display:block}
+.fig figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+pre{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow-x:auto;font-family:var(--f-mono);font-size:13px;line-height:1.55}
+footer{margin:40px 0 0;padding:22px 0 40px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
 svg text{font-family:var(--f-body)}
-.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--muted)}
-.legend span{display:inline-flex;align-items:center;gap:6px}
-.legend i{display:inline-block;width:22px;height:4px;border-radius:2px}
-.cards{display:grid;gap:18px}
-.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:12px;min-width:0}
-.card-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px}
-.tag{font-family:var(--f-mono);font-size:12px;font-weight:600;background:var(--board);color:var(--board-ink);padding:2px 8px;border-radius:4px}
-.card-head h3{margin:0;font-size:17px}
-.card-head .where{color:var(--muted);font-size:13px}
-.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:6px 18px;margin:0;font-size:13px}
-.spec div{min-width:0}
-.spec dt{color:var(--muted);font-size:12px}
-.spec dd{margin:0}
-.checks{display:grid;gap:4px;margin:0;padding:0;list-style:none}
-.checks label{display:flex;gap:10px;align-items:flex-start;font-size:14px;cursor:pointer;padding:3px 0}
-.checks input{margin-top:4px;accent-color:var(--accent);width:16px;height:16px;flex:none}
-.checks .sw{width:14px;height:14px;border-radius:3px;flex:none;margin-top:4px;border:1px solid var(--line)}
-.checks code,.mono{font-family:var(--f-mono);font-size:13px}
-.checks label.done{color:var(--muted);text-decoration:line-through}
-.note{background:var(--warn-bg);color:var(--ink);border-left:3px solid var(--warn);padding:8px 12px;border-radius:4px;font-size:14px}
-.note b{color:var(--warn)}
-.hint{color:var(--muted);font-size:13px;margin:0}
-table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
-th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.04em;text-transform:uppercase}
-td.mono{white-space:nowrap}
-tr.unused td{color:var(--nc)}
-.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
-.two>*{min-width:0}
-.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
-button{font:inherit;font-size:13px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer}
-button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.progress{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
-[hidden]{display:none!important}
-@media (max-width:700px){.menu{position:static!important}}
-.menu{display:grid;gap:10px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:8px}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
-.menu-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
-.menu-toggle{font-size:16px;font-weight:700;padding:8px 14px;background:var(--board);color:var(--board-ink);border-color:var(--board);border-radius:8px;display:inline-flex;gap:8px;align-items:center}
-.menu-toggle .chev{transition:transform .15s}
-.menu-toggle[aria-expanded="false"] .chev{transform:rotate(-90deg)}
-.groups{display:grid;gap:8px}
-.grp{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.grp>span{font-size:12px;color:var(--muted);width:44px;flex:none;letter-spacing:.04em}
-.vbtn{font-size:13.5px;padding:6px 11px;border-radius:999px;background:var(--paper);display:inline-flex;gap:6px;align-items:center}
-.vbtn .id{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
-.vbtn[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.vbtn[aria-pressed="true"] .id{color:var(--paper);opacity:.75}
-.vbtn .ok{width:7px;height:7px;border-radius:50%;background:var(--accent);display:none}
-.vbtn.alldone .ok{display:inline-block}
-.view-nav{display:flex;justify-content:space-between;gap:10px}
-.view-title{font-size:13px;color:var(--muted)}
-@media (prefers-reduced-motion:reduce){.menu-toggle .chev{transition:none}}
-.steps{margin:0;padding:0;list-style:none;display:grid;gap:6px;counter-reset:s}
-.steps li{display:flex;gap:10px;align-items:flex-start;font-size:14.5px}
-.steps li::before{counter-increment:s;content:counter(s);flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--paper);font-size:12px;font-weight:700;display:grid;place-items:center;margin-top:1px}
-.steps .sw{width:14px;height:14px;border-radius:3px;flex:none;margin-top:5px}
+.s-line{stroke:var(--ink);fill:none}
+.s-box{fill:var(--panel);stroke:var(--ink)}
+.s-cold{fill:color-mix(in srgb,var(--cold) 18%,var(--panel));stroke:var(--cold)}
+.s-warm{fill:color-mix(in srgb,var(--warm) 18%,var(--panel));stroke:var(--warm)}
+.s-txt{fill:var(--ink);font-size:13px}
+.s-sm{fill:var(--muted);font-size:11.5px}
+.s-flow{stroke:var(--cold);stroke-width:2;fill:none;marker-end:url(#arr)}
+.s-hanji{stroke:var(--accent);stroke-width:4}
 </style>
 </head>
 <body>
 
-
-<div class="wrap">
-<header>
-  <div class="meta">Nano_Heater_CO2_Controller · Arduino Nano R4 CTRL v2 · 120 × 90 mm</div>
-  <h1>Nano 제어보드 배선도</h1>
-  <p>아래 메뉴에서 센서나 커넥터를 하나 고르면 그 연결만 크게 보입니다. 기판 커넥터 모양, 꽂는 플러그, 전선 한 가닥씩, 장치 쪽 핀까지 그렸습니다. 핀 정보는 EasyEDA 설계 파일(2026-11-06)에서 뽑았고, 체크한 항목은 이 브라우저에 남습니다. 모두 체크한 버튼에는 초록 점이 붙습니다.</p>
-</header>
-
-<nav class="menu" aria-label="배선도 메뉴">
-  <div class="menu-top">
-    <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="true" aria-controls="groups"><span class="chev">▾</span>Nano 제어보드 배선도</button>
-    <span class="progress" id="prog"></span>
+<header class="hero"><div class="wrap">
+  <p class="kicker">고등학교 R&amp;E · 설계 문서</p>
+  <h1>바늘구멍으로 황소바람이 들어올까?</h1>
+  <p class="lede">한지창에 뚫린 구멍의 크기에 따라 창으로 새는 열과 들어오는 바깥 공기(환기량)가 어떻게 달라지는지 재는 실험 장치입니다. 작은 구멍이 열은 거의 잃지 않으면서 오염된 실내 공기를 바꿔 주는지 확인하는 것이 목표입니다.</p>
+  <p class="meta">최종 갱신 2026-11-02 · 3D 모델은 아래 버튼에서 열 수 있습니다.</p>
+  <div class="btnrow">
+    <a class="btn pri" href="apparatus.html">3D 장치 모델 열기</a>`n    <a class="btn" href="wiring.html" style="font-weight:700;border-color:var(--accent);color:var(--accent)">⚡ Nano 배선도 보기</a>
+    <a class="btn" href="apparatus.html#joint">연결부(창)만</a>
+    <a class="btn" href="apparatus.html#lid">마당 뚜껑만</a>
+    <a class="btn" href="acrylic-order.pdf">아크릴 부품 목록·의뢰서 (PDF)</a>
+    <a class="btn" href="parts.xlsx">구매 목록 (엑셀)</a>
   </div>
-  <div class="groups" id="groups"></div>
-</nav>
+  <div class="notice"><b>기준:</b> 장치 구조는 2026-11-02 아크릴 가공 도면(부품 16장), 전기는 실제로 만든 PCB 3장(전원 허브 · 히터판 · Nano R4 컨트롤러) 기준입니다. 자세한 근거는 설계도 <span class="mono">한지창_실험장치_설계도.md</span>(도면 .pdf)에 있습니다.</div>
+</div></header>
 
-<main id="views">
-<section class="section view" data-view="map" data-title="기판 전체 지도">
-  <h2>기판 전체 지도</h2>
-  <p class="hint">기판 위의 노란 커넥터를 누르거나 위 메뉴의 버튼을 누르면 그 커넥터 하나만 크게 보입니다.</p>
-  <div class="panel scroll"><div id="map"></div></div>
-  <div class="legend" id="legend"></div>
-</section>
+<nav class="toc" aria-label="목차"><div class="wrap">
+  <a href="#idea">연구 아이디어</a><a href="#device">장치 구성</a><a href="#joint">연결부(창)</a><a href="#acryl">아크릴 도면</a><a href="#method">측정 방법</a>
+  <a href="#elec">전기 구조</a><a href="#pcb">PCB</a><a href="wiring.html" style="color:var(--accent);font-weight:700">⚡배선도</a><a href="#parts">구매</a><a href="#todo">남은 일</a><a href="#handoff">인계</a>
+</div></nav>
 
-<section class="section view" data-view="co2" data-title="CO2 센서 원리·통신">
-  <h2>CO2 센서 CM1107N 원리와 통신</h2>
-  <p class="hint">배선 방법은 메뉴의 "CO2 센서 A", "CO2 센서 B"에 있습니다. 여기는 센서가 어떻게 재고 Nano와 무엇을 주고받는지 설명합니다.</p>
-  <div class="panel scroll">
-   <h3 style="margin:0 0 6px;font-size:16px">① 센서가 CO2를 재는 방법 (NDIR, 비분산 적외선)</h3>
-   <svg viewBox="0 0 900 250" width="900" style="max-width:100%;height:auto;min-width:640px" role="img" aria-label="적외선 램프에서 나온 빛이 측정실을 지나 검출기로 가는 원리">
-    <rect x="150" y="40" width="560" height="130" rx="65" fill="none" stroke="var(--nylon-edge)" stroke-width="2"/>
-    <circle cx="200" cy="105" r="30" fill="var(--hdr)"/><circle cx="200" cy="105" r="12" fill="#ffb347"/>
-    <text x="200" y="196" text-anchor="middle" font-size="13" fill="var(--ink)">① 적외선 램프</text>
-    <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#e8892b"/></marker></defs>
-    <path d="M235 92 H635" stroke="#e8892b" stroke-width="3" marker-end="url(#ar)" stroke-dasharray="10 6"/>
-    <path d="M235 118 H635" stroke="#e8892b" stroke-width="3" marker-end="url(#ar)" stroke-dasharray="10 6"/>
-    <g fill="var(--ink)" opacity=".85">
-     <circle cx="330" cy="70" r="5"/><circle cx="410" cy="140" r="5"/><circle cx="480" cy="64" r="5"/><circle cx="545" cy="132" r="5"/><circle cx="380" cy="100" r="5"/><circle cx="590" cy="80" r="5"/>
-    </g>
-    <text x="430" y="30" text-anchor="middle" font-size="13" fill="var(--ink)">② 측정실 안의 CO2 분자(●)가 4.26 µm 적외선을 흡수 → 빛이 약해짐</text>
-    <rect x="645" y="76" width="22" height="28" fill="#7d5ba6"/><rect x="645" y="108" width="22" height="28" fill="#5a8fd6"/>
-    <text x="680" y="95" font-size="12" fill="var(--ink)">측정용 (4.26 µm)</text>
-    <text x="680" y="127" font-size="12" fill="var(--ink)">기준용 (흡수 없음)</text>
-    <text x="660" y="196" text-anchor="middle" font-size="13" fill="var(--ink)">③ 검출기 2개 (듀얼 빔)</text>
-    <text x="450" y="230" text-anchor="middle" font-size="13" fill="var(--muted)">④ 두 검출기 값의 비율로 농도(ppm)를 계산 → 램프가 낡아도 기준용 값으로 보정됨 · 측정 주기 약 1초, 전원 후 예열 필요</text>
-   </svg>
-  </div>
+<main class="wrap">
 
-  <div class="panel scroll">
-   <h3 style="margin:0 0 6px;font-size:16px">② Nano와 센서가 주고받는 길 (센서 A 기준)</h3>
-   <svg viewBox="0 0 980 330" width="980" style="max-width:100%;height:auto;min-width:700px" role="img" aria-label="Nano와 CM1107N 사이의 신호 흐름">
-    <defs>
-     <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--w-tx)"/></marker>
-     <marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--w-rx)"/></marker>
-    </defs>
-    <!-- 블록 -->
-    <rect x="20" y="40" width="160" height="200" rx="8" fill="var(--modpcb)"/>
-    <text x="100" y="66" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">Arduino Nano R4</text>
-    <text x="100" y="84" text-anchor="middle" font-size="11" fill="#dfe8ff">5 V 로직</text>
-    <text x="170" y="125" text-anchor="end" font-size="13" fill="#fff" font-family="var(--f-mono)">D1 (TX)</text>
-    <text x="170" y="195" text-anchor="end" font-size="13" fill="#fff" font-family="var(--f-mono)">D0 (RX)</text>
-    <rect x="200" y="20" width="560" height="270" rx="10" fill="none" stroke="var(--board)" stroke-width="2" stroke-dasharray="6 5"/>
-    <text x="214" y="40" font-size="12" fill="var(--accent)" font-weight="700">제어보드 안</text>
-    <rect x="410" y="160" width="130" height="70" rx="6" fill="var(--hdr)"/>
-    <text x="475" y="186" text-anchor="middle" font-size="13" fill="#fff" font-weight="700">U8 74AHCT1G125</text>
-    <text x="475" y="206" text-anchor="middle" font-size="11" fill="#ddd">3.3 V → 5 V 변환</text>
-    <text x="475" y="221" text-anchor="middle" font-size="11" fill="#ddd">전원 +5V, OE = GND</text>
-    <rect x="290" y="183" width="56" height="24" rx="3" fill="var(--paper)" stroke="var(--ink)"/>
-    <text x="318" y="200" text-anchor="middle" font-size="12" fill="var(--ink)">R3 1kΩ</text>
-    <rect x="690" y="70" width="50" height="190" rx="4" fill="var(--nylon)" stroke="var(--nylon-edge)"/>
-    <text x="715" y="62" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="700">U6 (XH 4P)</text>
-    <g font-size="12" fill="var(--hdr)" font-family="var(--f-mono)"><text x="715" y="99" text-anchor="middle">1</text><text x="715" y="149" text-anchor="middle">2</text><text x="715" y="199" text-anchor="middle">3</text><text x="715" y="249" text-anchor="middle">4</text></g>
-    <rect x="820" y="40" width="140" height="250" rx="8" fill="var(--board)"/>
-    <text x="890" y="64" text-anchor="middle" font-size="14" font-weight="700" fill="var(--board-ink)">CM1107N</text>
-    <text x="890" y="82" text-anchor="middle" font-size="11" fill="var(--board-ink)">TX는 3.3 V로 나옴</text>
-    <g font-size="12" fill="var(--board-ink)" font-family="var(--f-mono)"><text x="830" y="99">CON4-1 +5V</text><text x="830" y="149">CON4-2 GND</text><text x="830" y="199">CON5-3 TX</text><text x="830" y="249">CON5-2 RX</text></g>
-    <!-- 선 -->
-    <path d="M240 95 H690" stroke="var(--w-5v)" stroke-width="4"/><text x="250" y="88" font-size="12" fill="var(--ink)">+5V (기판 K7805에서)</text>
-    <path d="M740 95 H822" stroke="var(--w-5v)" stroke-width="4"/>
-    <path d="M240 145 H690" stroke="var(--w-gnd)" stroke-width="4"/><text x="250" y="138" font-size="12" fill="var(--ink)">GND</text>
-    <path d="M740 145 H822" stroke="var(--w-gnd)" stroke-width="4"/>
-    <path d="M820 195 H740" stroke="var(--w-tx)" stroke-width="4"/><path d="M690 195 H540" stroke="var(--w-tx)" stroke-width="4" marker-end="url(#ag)"/>
-    <path d="M410 195 H346" stroke="var(--w-tx)" stroke-width="4" marker-end="url(#ag)"/><path d="M290 195 H182" stroke="var(--w-tx)" stroke-width="4" marker-end="url(#ag)"/>
-    <text x="648" y="186" text-anchor="middle" font-size="12" fill="var(--w-tx)" font-weight="600">측정값 3.3 V</text>
-    <text x="236" y="186" text-anchor="middle" font-size="12" fill="var(--w-tx)" font-weight="600">5 V</text>
-    <path d="M182 120 H600 V245 H690" stroke="var(--w-rx)" stroke-width="4" fill="none"/><path d="M740 245 H818" stroke="var(--w-rx)" stroke-width="4" marker-end="url(#ab)"/>
-    <text x="380" y="113" font-size="12" fill="var(--w-rx)" font-weight="600">명령 (5 V 그대로, 센서 RX가 5 V를 받을 수 있음)</text>
-    <text x="490" y="310" text-anchor="middle" font-size="12" fill="var(--muted)">센서 B(U7)는 똑같은 회로로 D9 → 센서 RX, 센서 TX → U9 → R5 → D8</text>
-   </svg>
-  </div>
-
-  <div class="two">
-   <div class="panel">
-    <h3 style="margin:0 0 8px;font-size:16px">③ 통신 한 번의 내용</h3>
-    <table>
-     <tr><th>방향</th><th>바이트 (16진수)</th><th>뜻</th></tr>
-     <tr><td>Nano → 센서</td><td class="mono">11 01 01 ED</td><td>"농도 알려 줘" 명령</td></tr>
-     <tr><td>센서 → Nano</td><td class="mono">16 05 01 02 58 00 00 8A</td><td>4·5번째 바이트 = 02, 58 → 2×256+88 = <b>600 ppm</b></td></tr>
-    </table>
-    <p class="hint" style="margin-top:8px">통신 설정 9600 bps, 8비트, 정지 1비트, 패리티 없음. 6번째 바이트는 예열·교정 상태입니다.</p>
-   </div>
-   <div class="panel">
-    <h3 style="margin:0 0 8px;font-size:16px">④ 설치할 때</h3>
-    <ul style="margin:0;padding-left:18px;display:grid;gap:4px;font-size:14px">
-     <li>센서 A(U6)와 B(U7) 중 어느 쪽을 방에, 어느 쪽을 마당에 둘지 정하고 케이블에 표시합니다.</li>
-     <li>금속 덮개의 작은 구멍이 막히지 않게 하고, 니들 끝의 CO2 분출구 바로 앞은 피합니다.</li>
-     <li>전원을 넣은 직후에는 예열 중이라 값이 불안정합니다. 응답의 상태 바이트(6번째)로 예열이 끝났는지 확인하고 그 뒤부터 기록하세요.</li>
-     <li>마당(10 °C 안팎)의 결로가 센서에 맺히지 않게 벽에서 조금 띄워 둡니다.</li>
-    </ul>
-   </div>
-  </div>
-</section>
-</section>
-
-<section class="section view" data-view="parts" data-title="케이블 준비물">
-  <h2>케이블 만들 때 준비물</h2>
-  <div class="panel scroll"><table id="bom"></table></div>
-  <p class="hint">JST XH와 기판의 M2501V-03P는 모두 2.50 mm 간격이라 같은 XH 하우징이 맞습니다. 크림프 단자는 하우징과 같은 계열(XH용)을 쓰세요.</p>
-</section>
-
-<section class="section view" data-view="pins" data-title="Nano 소켓 핀표">
-  <h2>Nano 소켓 핀 배정</h2>
-  <p class="hint">Nano R4는 USB 커넥터가 기판의 "NANO USB ^" 표시 쪽(위)을 향하게 꽂습니다. 흐린 줄은 기판에서 쓰지 않는 핀입니다.</p>
-  <div class="two">
-    <div class="panel scroll"><table id="h1"></table></div>
-    <div class="panel scroll"><table id="h2"></table></div>
+<section id="idea">
+  <h2>연구 아이디어</h2>
+  <p>겨울에 문풍지 바른 한지창은 "바늘구멍으로 황소바람 든다"는 말처럼 작은 구멍으로도 찬바람이 들어온다고 알려져 있습니다. 그런데 구멍이 아주 작으면 공기는 끈적하게(점성 흐름) 조금만 들어와, 열 손실은 작으면서 실내의 오염된 공기는 천천히 바꿔 줄 수 있습니다. 이 장치는 구멍 크기를 바꿔 가며 두 가지를 동시에 잽니다.</p>
+  <div class="cards">
+    <div class="card"><h4>열 손실</h4><p>방을 실험실 온도로 유지하는 히터 전력 = 한지로 빠져나가는 열. 온도차로 나눠 W/K로 비교.</p></div>
+    <div class="card"><h4>공기 교환(환기량)</h4><p>방에 CO2를 짧게 넣고 섞은 뒤 밸브를 닫아, 방–마당 농도차가 줄어드는 속도(감쇠 기울기 k)로 계산. Q = k × 방 부피.</p></div>
+    <div class="card"><h4>구멍 조건</h4><p class="mono">1 ~ 5 mm, 0.5 mm 간격 (9가지)</p><p>+ 기준(구멍 없음 · 막힘 필름). 확산과 흐름이 같아지는 지점(약 5 mm)까지의 변화를 확인.</p></div>
   </div>
 </section>
 
-<section class="section view" data-view="final" data-title="전원 넣기 전 확인">
-  <div class="bar"><h2>전원을 넣기 전 마지막 확인</h2><button id="reset" type="button">체크 모두 지우기</button></div>
-  <div class="panel"><ul class="checks" id="final"></ul></div>
+<section id="device">
+  <h2>장치 구성 <small>방 · 연결부 · 마당</small></h2>
+  <figure class="fig">
+    <svg viewBox="0 0 900 300" role="img" aria-label="방, 한지 창, 마당의 배치와 공기 흐름">
+      <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--cold)"/></marker></defs>
+      <rect class="s-warm" x="40" y="90" width="270" height="140" rx="4"/>
+      <text class="s-txt" x="60" y="115">방 (실내) · 아크릴 2T</text>
+      <text class="s-sm" x="60" y="134">내부 150 × 100 × 100 · 실험실 온도로 유지</text>
+      <rect x="95" y="160" width="10" height="55" fill="var(--ok)"/><text class="s-sm" x="112" y="200">PCB 히터판</text>
+      <circle cx="235" cy="165" r="5" fill="var(--ink)"/><text class="s-sm" x="190" y="186">T1</text>
+      <rect class="s-box" x="60" y="210" width="40" height="14"/><text class="s-sm" x="104" y="222">CO2 #1</text>
+      <rect x="318" y="55" width="8" height="205" fill="var(--muted)" opacity=".5"/>
+      <line class="s-hanji" x1="322" y1="110" x2="322" y2="210"/>
+      <text class="s-txt" x="300" y="45" text-anchor="middle">한지 창 100 × 100</text>
+      <text class="s-sm" x="300" y="280" text-anchor="middle">자석 8쌍 · 폼 테이프</text>
+      <rect class="s-cold" x="330" y="60" width="440" height="200" rx="4"/>
+      <text class="s-txt" x="350" y="85">마당 (바깥) · 아크릴 3T + 아이소핑크 10T</text>
+      <text class="s-sm" x="350" y="104">내부 240 × 160 × 160 · 펠티어로 10~12 °C</text>
+      <rect x="700" y="115" width="26" height="90" fill="var(--ink)"/><rect x="726" y="105" width="5" height="120" fill="var(--muted)"/><text class="s-sm" x="682" y="230">팬 + 고정판</text>
+      <circle cx="420" cy="230" r="5" fill="var(--ink)"/><text class="s-sm" x="430" y="234">T3</text>
+      <rect class="s-box" x="380" y="120" width="40" height="14"/><text class="s-sm" x="378" y="150">CO2 #2</text>
+      <path class="s-flow" d="M800,150 L740,150"/><text class="s-sm" x="782" y="140">입구 φ20</text>
+      <path class="s-flow" d="M695,160 L340,160"/>
+      <path class="s-flow" d="M315,160 C250,160 200,110 150,100 L150,70"/><text class="s-sm" x="160" y="68">출구 φ18 → 실험실</text>
+      <rect class="s-box" x="820" y="120" width="60" height="60" rx="30"/><text class="s-sm" x="850" y="155" text-anchor="middle">T4 실험실</text>
+    </svg>
+    <figcaption>공기는 마당 입구 → 팬 → 한지 구멍 → 방 → 방 출구(실험실)로 흐릅니다. 마당은 늘 깨끗한 바깥 공기 역할을 합니다.</figcaption>
+  </figure>
+  <div class="tbl"><table>
+    <thead><tr><th>부분</th><th>구성 · 치수</th><th>상태</th></tr></thead>
+    <tbody>
+      <tr><td>방</td><td>아크릴 2T 상자, 내부 150 × 100 × 100 (약 1.5 L). PCB 히터판 60 × 60(방 가운데 세움), T1, CO2 센서 #1, CO2 니들. <b>구멍은 모두 끝벽(한지 반대쪽)</b>: 출구 φ18(천장에서 15, 앞쪽으로 치우침) + 종이컵 가림막, T1 프로브 φ6.2(바닥에서 50, 끼워 고정), 선 φ8 × 2, 니들 튜브 φ5.5</td><td><span class="tag ok">확정</span></td></tr>
+      <tr><td>마당</td><td>아크릴 3T, 내부 240 × 160 × 160 (약 6.1 L), 바깥 아이소핑크 10T(앞·뒤·오른쪽·바닥), 다리 57. 알루미늄 1T 검정(바닥 238 × 158, 앞 230 × 150, 뒤 205 × 130). 펠티어 6자리(구멍 26 × 26, 처음 2개). 80 mm 팬 + 팬 고정판(바닥 홈 깊이 1.5) + 보강대 2. 뒷벽 입구 φ20, 선 구멍 φ10 · φ12. T3, CO2 #2</td><td><span class="tag ok">도면 완료</span></td></tr>
+      <tr><td>마당 뚜껑</td><td>받침 테두리 3T(256 × 186, 창 쪽은 벽 바깥면과 맞춤, 폭 13, 귀 4) + 폼 테이프 + 투명 뚜껑 3T 한 장 + 위에 아이소핑크 10T 얹기 + 41 mm 더블클립 4개</td><td><span class="tag ok">도면 완료</span></td></tr>
+      <tr><td>연결부(창)</td><td>마당 왼쪽 벽 3T가 창틀 · 폼 1T · 한지 140 × 140 · 폼 1T · 방 플랜지 R 3T 170 × 170 · 자석 φ10 8쌍</td><td><span class="tag ok">확정</span></td></tr>
+    </tbody>
+  </table></div>
 </section>
 
-<div id="cards"></div>
+<section id="joint">
+  <h2>연결부(창) <small>방을 떼었다 붙이는 구조</small></h2>
+  <p>창문짝 없이 한지 한 장을 마당 벽(창틀 역할)과 방 플랜지 사이에 끼웁니다. 두 판에 박힌 자석이 서로 당겨 폼 테이프로 한지 둘레를 누르고, 방 위치도 저절로 맞춥니다.</p>
+  <pre>마당 벽 3T │ 폼 1T │ 한지 │ 폼 1T │ 방 플랜지 R 3T │ 방 상자 2T
+  (창 100×100, 자석 구멍 φ10.2 × 8 — 모서리 (±68,±68), 변 가운데 (0,±71)(±71,0))</pre>
+  <ul>
+    <li><b>밀폐:</b> EVA 단면 폼 1T × 10 mm(닫힌 기포)를 창 중심에서 55~65 위치에 고리로 붙입니다(벽 바깥면, R 앞면).</li>
+    <li><b>자석:</b> 네오디뮴 φ10, 8쌍. 폼 쪽 면과 평평하게 에폭시 고정. 3T 판은 자석 사이가 넓으면 휘므로 8쌍 모두 사용. 두께(3 또는 5 mm)는 구매 전 확정.</li>
+    <li><b>한지 교체:</b> 방을 모서리부터 비틀어 떼기 → 새 한지를 맞춤 표시에 놓고 마스킹테이프로 임시 고정 → 방을 정면에서 천천히 대기 → 30~60분 안정.</li>
+    <li><b>누설 허용:</b> 폼 틈 0.1 mm면 약 2 L/h(한지 확산 약 80 L/h, 2 mm 구멍 약 14 L/h와 비교). 막힘 시험(OHP 필름, 출구 닫힘)에서 CO2 반감기 1시간 이상이면 합격.</li>
+  </ul>
+  <div class="btnrow"><a class="btn" href="apparatus.html#joint">연결부 3D 보기</a></div>
+</section>
+
+<section id="acryl">
+  <h2>아크릴 도면 <small>업체 CNC 가공 · 직접 접착</small></h2>
+  <p>부품마다 DXF(가공용)와 PDF(치수 확인용)를 하나씩 만들었습니다(PC의 <span class="mono">아크릴_도면</span> 폴더, 목록·의뢰서·썸네일은 <span class="mono">00_부품목록_의뢰서.pdf</span>). 2T 5장 + 3T 11장 = <b>16장</b>.</p>
+  <div class="btnrow"><a class="btn pri" href="acrylic-order.pdf">부품 목록·의뢰서·썸네일 보기 (PDF)</a></div>
+  <div class="tbl"><table>
+    <thead><tr><th>번호</th><th>부품</th><th>두께 · 외형</th><th>가공</th></tr></thead>
+    <tbody>
+      <tr><td class="num">Y1</td><td>마당 바닥</td><td class="mono">3T 246×166</td><td>펠티어 26×26 × 2, <b>팬 고정판 홈 3.2×100.4 깊이 1.5 (관통 아님)</b></td></tr>
+      <tr><td class="num">Y2</td><td>마당 앞벽</td><td class="mono">3T 246×160</td><td>펠티어 × 2</td></tr>
+      <tr><td class="num">Y3</td><td>마당 뒷벽</td><td class="mono">3T 246×160</td><td>펠티어 × 2, 입구 φ20, 선 구멍 φ10 · φ12</td></tr>
+      <tr><td class="num">Y4</td><td>마당 왼쪽 벽 (창틀)</td><td class="mono">3T 160×160</td><td>창 100×100, 자석 φ10.2 × 8</td></tr>
+      <tr><td class="num">Y5</td><td>마당 오른쪽 벽</td><td class="mono">3T 160×160</td><td>없음</td></tr>
+      <tr><td class="num">Y6</td><td>팬 고정판</td><td class="mono">3T 100×126.5</td><td>φ76, φ4.3 × 4 (간격 71.5)</td></tr>
+      <tr><td class="num">Y7</td><td>팬 고정판 보강대 × 2</td><td class="mono">3T 18×40 삼각</td><td>없음</td></tr>
+      <tr><td class="num">L1</td><td>뚜껑 받침 테두리</td><td class="mono">3T 256×236(귀 포함)</td><td>안 230×160</td></tr>
+      <tr><td class="num">L2</td><td>마당 뚜껑</td><td class="mono">3T 256×236(귀 포함)</td><td>없음</td></tr>
+      <tr><td class="num">R1–R4</td><td>방 바닥 · 천장 · 앞/뒤 옆벽</td><td class="mono">2T</td><td>없음</td></tr>
+      <tr><td class="num">R5</td><td>방 끝벽 (구멍 모음)</td><td class="mono">2T 104×104</td><td>출구 φ18, T1 프로브 φ6.2, 선 φ8 × 2, 니들 φ5.5</td></tr>
+      <tr><td class="num">R6</td><td>방 플랜지 R</td><td class="mono">3T 170×170</td><td>창 100×100, 자석 φ10.2 × 8</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><b>조립:</b> 아크릴 접착제(용제형)로 상자를 짜고, 굳은 뒤 방·마당 안쪽 이음매에 중성(무초산) 투명 실리콘. 뚜껑만 클립으로 고정.</li>
+    <li><b>주의:</b> 아크릴 접착제는 아이소핑크를 녹입니다. 아이소핑크와 받침 테두리의 아이소핑크 위 부분은 양면테이프로 붙입니다.</li>
+  </ul>
+</section>
+
+<section id="method">
+  <h2>측정 방법</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>항목</th><th>방법</th></tr></thead>
+    <tbody>
+      <tr><td>온도 조건</td><td>주 측정 온도차 10 °C(마당 10~12 °C), 비례 확인 6 °C. 12 °C를 넘으면 한지 결로·판 성에 위험. 겨울 환산은 온도차 22 °C(한파 35 °C).</td></tr>
+      <tr><td>열 손실</td><td>히터는 PI 제어 · 20초 주기 시간 비례(방 T1 = 실험실 T4). INA219로 0.1초마다 V×I 적분 → 10분 평균 W → (T4 − T3)로 나눠 W/K.</td></tr>
+      <tr><td>환기량</td><td><b>CO2 감쇠법:</b> 주입(목표 예: 1,800 ppm) → 1~2분 혼합 → 밸브 닫고 기록. ΔC = C방 − C마당, ln ΔC 기울기 = k. 기본(출구 열림) <b>Q = k × V방</b>(약 1.5 L). 출구 닫힘 + 마당 입구 막음일 때만 Q = k ÷ (1/V방 + 1/V마당). 교차 확인: Q ≈ ΔP히터 ÷ (1200 × ΔT).</td></tr>
+      <tr><td>기준값</td><td>측정일마다 막힘 필름 · 구멍 없는 한지로 기준값을 재서 뺌(창틀 열, 누설, 출구 확산).</td></tr>
+      <tr><td>CO2 공급</td><td>CO2 캔 → 저압 주머니(은박 풍선 검토 중) + 500 g 추(약 200 Pa) → 12 V NC 직동식 솔레노이드 → 실리콘 튜브(끝벽 아래 구멍 φ5.5, 벽만 통과) → 27G 니들(방 안으로 약 13 mm). 감쇠 기록 중에는 밸브를 열지 않음.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="elec">
+  <h2>전기 구조 <small>실제 제작 보드 기준</small></h2>
+  <figure class="fig">
+    <svg viewBox="0 0 900 300" role="img" aria-label="ATX, 전원 허브, 컨트롤러, 히터판 연결도">
+      <defs><marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink)"/></marker></defs>
+      <rect class="s-box" x="20" y="20" width="160" height="50" rx="6"/><text class="s-txt" x="100" y="50" text-anchor="middle">ATX 500 W</text>
+      <rect class="s-box" x="250" y="10" width="620" height="80" rx="8"/>
+      <text class="s-txt" x="270" y="36">① 전원 허브 Hanji_Power_Hub (5세트 공용, 114 × 86)</text>
+      <text class="s-sm" x="270" y="58">USB-C 10포트(5 V 고정, 세트당 2) → 펠티어 · 팬 2채널(4핀 PWM, 노브)</text>
+      <text class="s-sm" x="270" y="76">SW1 = ATX 전원 스위치(전체 차단)</text>
+      <line class="s-line" x1="180" y1="45" x2="250" y2="45" marker-end="url(#arr2)"/>
+      <rect class="s-cold" x="250" y="150" width="380" height="110" rx="8"/>
+      <text class="s-txt" x="270" y="176">② 컨트롤러 Nano_Heater_CO2_Controller (세트당 1, 120 × 90)</text>
+      <text class="s-sm" x="270" y="196">Molex 4핀 12 V → Nano R4 VIN · K7805 5 V(센서)</text>
+      <text class="s-sm" x="270" y="214">IRLZ44N 소켓 2(히터 D7 · 밸브 D6) · INA219 소켓 · CO2 × 2 · DS18B20 × 4</text>
+      <text class="s-sm" x="270" y="232">USB → 노트북(CSV 기록)</text>
+      <line class="s-line" x1="120" y1="70" x2="120" y2="205"/><line class="s-line" x1="120" y1="205" x2="250" y2="205" marker-end="url(#arr2)"/><text class="s-sm" x="128" y="140">Molex 12 V</text>
+      <rect class="s-warm" x="690" y="150" width="180" height="110" rx="8"/>
+      <text class="s-txt" x="705" y="176">③ 히터판 (60 × 60)</text>
+      <text class="s-sm" x="705" y="196">68 Ω × 8 = 34 Ω</text>
+      <text class="s-sm" x="705" y="214">12 V 최대 4.2 W</text>
+      <text class="s-sm" x="705" y="232">판 온도 DS18B20 (PLATE)</text>
+      <line class="s-line" x1="630" y1="205" x2="690" y2="205" marker-end="url(#arr2)"/>
+      <line class="s-line" x1="820" y1="90" x2="820" y2="130" marker-end="url(#arr2)"/><text class="s-sm" x="760" y="140">펠티어 · 팬</text>
+    </svg>
+    <figcaption>예전 설계의 HTR 히터 구동 보드(릴레이 · XL4015)는 쓰지 않고, 기능을 컨트롤러로 합쳤습니다. 장치 5세트면 허브 1장 + 컨트롤러·히터판 각 5장.</figcaption>
+  </figure>
+  <h3>Arduino Nano R4 핀 배분</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>기능</th><th>핀</th></tr></thead>
+    <tbody>
+      <tr><td>DS18B20 × 4 (T1 방, T3 마당, T4 실험실, PLATE 히터판)</td><td class="mono">D2 (4.7 kΩ 풀업)</td></tr>
+      <tr><td>CM1107N CO2 #1 (방) — Serial1</td><td class="mono">D0 수신 / D1 송신</td></tr>
+      <tr><td>CM1107N CO2 #2 (마당) — SoftwareSerial</td><td class="mono">D8 수신 / D9 송신</td></tr>
+      <tr><td>CO2 솔레노이드 밸브 (IRLZ44N)</td><td class="mono">D6</td></tr>
+      <tr><td>히터 (IRLZ44N, 시간 비례)</td><td class="mono">D7</td></tr>
+      <tr><td>INA219 (I2C 0x40)</td><td class="mono">A4 / A5</td></tr>
+    </tbody>
+  </table></div>
+  <h3>안전장치</h3>
+  <ol>
+    <li><b>펌웨어(필수, 바이메탈 없음):</b> 판 온도 ≥ 60 °C, 방이 실험실보다 3 °C 이상 높음, 센서 오류(−127/85 °C), 90% 출력 10분 초과 → 히터 OFF. 히터 OFF인데 전류 > 50 mA → MOSFET 단락 경고. 워치독. CO2 3,000 ppm 초과·연속 열림 상한 → 밸브 닫음.</li>
+    <li><b>보드:</b> 게이트 10 kΩ 풀다운 → 리셋·Nano 빠짐 시 히터·밸브 OFF. 입력 PTC 1.5 A. NC 밸브라 전원이 끊기면 닫힘.</li>
+    <li><b>펠티어:</b> 컨트롤러가 끌 수 없음 → 방열판 팬 확인, 이상 시 허브 SW1로 전체 차단.</li>
+  </ol>
+  <h3>전력 예산 (5세트)</h3>
+  <p>펠티어(USB-C 5 V × 2 A) 10개 약 100 W + 12 V 부하(히터 최대 4.2 W · 밸브 · 팬 · 보드, 세트당 약 11 W) 약 55 W = <b>약 155 W</b> (500 W의 31%). 허브 USB-C는 5 V 고정이라 마당 온도는 켜는 펠티어 개수로 맞춥니다.</p>
+</section>
+
+<section id="pcb">
+  <h2>PCB</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>보드</th><th>내용</th><th>상태</th></tr></thead>
+    <tbody>
+      <tr><td>Hanji_Power_Hub</td><td>114 × 86, ATX 24핀, USB-C 10포트(5 V), 팬 2채널(555 PWM, 노브 RK09 10k)</td><td><span class="tag ok">DRC 0</span> Gerber·BOM·CPL 완료</td></tr>
+      <tr><td>Hanji_PCB_Heater</td><td>60 × 60, 68 Ω 2512 × 8 직렬 = 34 Ω, 12 V 4.2 W, 바이메탈 없음, 판 중앙 DS18B20</td><td><span class="tag ok">DRC 0</span> Gerber·BOM·CPL 완료</td></tr>
+      <tr><td>Nano_Heater_CO2_Controller</td><td>120 × 90, Nano R4 암 헤더 소켓, Molex 4핀 12 V(직접 납땜), IRLZ44N 소켓 × 2, INA219 소켓, CO2 XH 4P × 2, DS18B20 XH 3P × 4, 밸브 PH2.0/XH2.54</td><td><span class="tag ok">DRC 0</span> 주문 전 방 CO2 핀(D0/D1) 연결 확인</td></tr>
+      <tr><td>Hanji_Heater_Driver</td><td>70 × 50 (예전 설계)</td><td><span class="tag wip">사용 안 함</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="parts">
+  <h2>구매</h2>
+  <p>11번가 장바구니 기준 목록은 <a href="parts.xlsx">구매 목록 엑셀</a>에 있습니다. 마당 팬 ARCTIC P8 PWM PST(4핀)와 서멀 구리스 MX-4 8g을 추가로 담았습니다. 검정 아노다이징 판과 가스 샘플링백은 국산 알루미늄판 + 무광 검정 스프레이, 은박 풍선(검토)으로 바꿨습니다.</p>
+  <ul>
+    <li><b>견적·결정 필요:</b> 아크릴 가공 의뢰(도면 16장 완료), 41 mm 더블클립, 은박 풍선, 중성 실리콘·아크릴 접착제·양면테이프, PCB 제작(3종).</li>
+    <li><b>필요 없어짐:</b> 조절형 강압 모듈(보류), 퓨즈 15 A · DC 잭 케이블(예전 전원 설계용), 6T 아크릴(이중 뚜껑 삭제).</li>
+  </ul>
+</section>
+
+<section id="todo">
+  <h2>남은 일 · 결정 대기</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>항목</th><th>내용</th></tr></thead>
+    <tbody>
+      <tr><td>펠티어 모듈 실측</td><td>펠티어 판(24 × 24)이 방열판 위로 3 mm 이상 튀어나오는지(아크릴 3T 통과), 모듈 높이(바닥 2개 &lt; 다리 57), USB-C 기판 돌출 길이</td></tr>
+      <tr><td>자석</td><td>두께 3 mm vs 5 mm 확정, 힘 시험(2 mm 간격에서 한 쌍 1.5 kg 이상)</td></tr>
+      <tr><td>아크릴 발주</td><td>의뢰서 + DXF 16장 전달, Y1 반 깊이 홈 가공 확인</td></tr>
+      <tr><td>마당 온도</td><td>허브 5 V 고정으로 10~12 °C가 펠티어 개수로 맞는지 시험</td></tr>
+      <tr><td>전원 허브 팬 채널</td><td>2채널뿐 → 3세트 이상 동시 운용 시 팬 전원 방법</td></tr>
+      <tr><td>CO2 주머니</td><td>은박 풍선(10인치, 약 1 L) 확정 여부</td></tr>
+      <tr><td>PCB</td><td>컨트롤러 방 CO2 핀(D0/D1) 확인 후 3종 주문</td></tr>
+      <tr><td>펌웨어</td><td>안전 차단 → 시간 비례 PI · 에너지 적분 → 감쇠 측정 상태 머신 → CSV</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="handoff">
+  <h2>인계 메모</h2>
+  <ul>
+    <li><b>이 사이트:</b> 정적 HTML 파일(index.html, apparatus.html), 구매 목록 엑셀(parts.xlsx), 아크릴 부품 목록·의뢰서(acrylic-order.pdf = 아크릴_도면 폴더의 00_부품목록_의뢰서.pdf 복사본)로 되어 있습니다. 고칠 때는 파일을 수정해 Cloudflare Pages에 다시 올리면 같은 주소로 바뀝니다.</li>
+    <li><b>3D 모델:</b> apparatus.html 한 파일. 3D 라이브러리(three.js r128)를 인터넷에서 불러오므로 인터넷 연결이 필요합니다. 링크 끝 <span class="mono">#room #yard #joint #lid</span>로 화면을 바로 열 수 있습니다.</li>
+    <li><b>설계 문서(작업 PC 황소바람 폴더):</b> 한지창_실험장치_설계도.md(+ 도면 .pdf), 황소바람_인수인계_v3_2026-10-22.md(PCB·전자), 황소바람_Nano_펌웨어_주의사항.md, 황소바람_구매목록_2026-10-23.xlsx, 아크릴_도면 폴더.</li>
+    <li><b>EasyEDA:</b> Hanji_Power_Hub, Hanji_PCB_Heater, Nano_Heater_CO2_Controller(JLCONE에도 복사). 제조 파일은 작업 PC 다운로드 폴더.</li>
+  </ul>
+</section>
+
 </main>
-
-<div class="view-nav">
-  <button type="button" id="prevBtn">← 이전</button>
-  <span class="view-title" id="viewPos"></span>
-  <button type="button" id="nextBtn">다음 →</button>
-</div>
-</div>
-<script>
-const C={v12:'--w-12v',v5:'--w-5v',gnd:'--w-gnd',tx:'--w-tx',rx:'--w-rx',dq:'--w-dq',plug:'--w-plug'};
-const CN={v12:'노랑',v5:'빨강',gnd:'검정',tx:'초록',rx:'파랑',dq:'노랑'};
-
-/* 카드 데이터
-   mode: 'cable' 기판 커넥터 + 케이블 하우징 + 전선 + 장치 / 'direct' 장치를 기판 커넥터에 바로 꽂음
-   board.shape: molex | kf301 | xh | ph | hdr
-   dev.groups[].shape: molexplug | kf301 | lead | smallhdr | to220 | module
-   wires: [보드핀 index, 장치 그룹 index, 장치핀 index, 색]
-*/
-const CARDS=[
- {id:'J10',title:'전원 입력 (ATX 파워)',where:'왼쪽 위 · 실크 "ATX MOLEX 4P"',pos:[8,21],mode:'direct',
-  spec:[['기판 커넥터','4핀 몰렉스(PC 주변기기 전원) 소켓, 5.08 mm 간격'],['꽂는 것','ATX 파워의 몰렉스 4P 플러그 (하드디스크·팬용)'],['전선','파워 케이블 그대로 사용']],
-  board:{shape:'molex',pins:[['1','+12V 입력'],['2','GND'],['3','GND'],['4','사용 안 함 (5V)']]},
-  dev:{title:'ATX 파워 몰렉스 4P 플러그',groups:[{shape:'molexplug',pins:[['1','노랑 · +12V','v12'],['2','검정 · GND','gnd'],['3','검정 · GND','gnd'],['4','빨강 · +5V','v5',1]]}]},
-  wires:[[0,0,0,'v12'],[1,0,1,'gnd'],[2,0,2,'gnd']],
-  note:'몰렉스는 모서리 두 곳이 깎인 쪽이 있어 한 방향으로만 들어갑니다. 깎인 모서리를 기판 실크와 맞추세요. 기판의 4번(+5V)은 연결이 없어서 플러그의 빨강 선은 신경 쓰지 않아도 됩니다. <b>기판 부품 이름이 "IDE 母座(암)"로 되어 있습니다.</b> 파워 케이블 쪽도 보통 암 단자이므로, 실물을 받으면 핀이 서로 맞물리는지 먼저 확인하세요.'},
- {id:'J11',title:'히터판',where:'왼쪽 아래 · 실크 "HEATER + −"',pos:[18,83],mode:'cable',
-  spec:[['기판 커넥터','KF301-5.0-2P 나사 단자 (5.0 mm)'],['꽂는 것','전선 끝을 벗겨 바로 조임 (하우징 없음)'],['전선','0.5 mm² 이상, 빨강/검정']],
-  board:{shape:'kf301',pins:[['1','+ (HEAT_P)'],['2','− (HEAT_N)']]},
-  dev:{title:'히터판 J1 (KF301 나사 단자)',groups:[{shape:'kf301',pins:[['1','+V_IN'],['2','GND']]}]},
-  wires:[[0,0,0,'v5'],[1,0,1,'gnd']],
-  note:'양쪽 모두 나사 단자입니다. 피복을 6~7 mm 벗기고 꼬아서 끼운 뒤 나사를 조이세요. 히터판의 70 °C 바이메탈(TH1)은 히터판 안에서 이미 직렬로 연결되어 있습니다.'},
- {id:'H3',title:'히터 MOSFET',where:'아래쪽 · 실크 "HEAT FET G D S"',pos:[40,84],mode:'direct',
-  spec:[['기판 커넥터','2.54 mm 암 핀헤더 3P (PM254-1-03)'],['꽂는 것','TO-220 MOSFET 다리 3개를 바로 꽂음'],['부품','로직레벨 N-MOSFET (IRLZ44N, IRLB8721 등)']],
-  board:{shape:'hdr',pins:[['1','G · GATE_H (D7)'],['2','D · HEAT_N (히터 −)'],['3','S · GND']]},
-  dev:{title:'TO-220 MOSFET (글자 면이 보이게)',groups:[{shape:'to220',pins:[['1','G (게이트)'],['2','D (드레인)'],['3','S (소스)']]}]},
-  wires:[],
-  note:'<b>반드시 로직레벨 MOSFET</b>(게이트 5 V에서 완전히 켜지는 제품)을 쓰세요. 글자가 보이는 면에서 왼쪽 다리부터 G, D, S입니다. 방열판이 닿는 금속 탭은 D(드레인)와 연결되어 있으니 다른 금속에 닿지 않게 하세요.'},
- {id:'H5',title:'솔레노이드 MOSFET',where:'아래쪽 · 실크 "SOL FET G D S"',pos:[61,84],mode:'direct',
-  spec:[['기판 커넥터','2.54 mm 암 핀헤더 3P (PM254-1-03)'],['꽂는 것','TO-220 MOSFET 다리 3개를 바로 꽂음'],['부품','H3과 같은 로직레벨 N-MOSFET']],
-  board:{shape:'hdr',pins:[['1','G · GATE_S (D6)'],['2','D · SOL_N (밸브 −)'],['3','S · GND']]},
-  dev:{title:'TO-220 MOSFET (글자 면이 보이게)',groups:[{shape:'to220',pins:[['1','G (게이트)'],['2','D (드레인)'],['3','S (소스)']]}]},
-  wires:[],
-  note:'H3과 같은 방향으로 꽂습니다. 밸브 코일의 역기전력은 기판의 1N4007(D3)이 흡수합니다.'},
- {id:'J13',title:'CO2 밸브 (12 V NC 솔레노이드)',where:'오른쪽 아래 · 실크 "VALVE 12V"',pos:[84,84],mode:'cable',
-  spec:[['기판 커넥터','JST XH 2P (B2B-XH-A), 2.50 mm'],['꽂는 것','XH 2P 하우징 + XH 크림프 단자 2개'],['전선','AWG 24~26, 빨강/검정']],
-  board:{shape:'xh',pins:[['1','VIN (+12V)'],['2','SOL_N (MOSFET D)']]},
-  dev:{title:'12 V NC 솔레노이드 밸브',groups:[{shape:'lead',body:'solenoid',pins:[['+','밸브 +'],['−','밸브 −']]}]},
-  wires:[[0,0,0,'v5'],[1,0,1,'gnd']],
-  note:'옆의 <b>J12 (JST PH 2P, 2.0 mm)</b>도 같은 두 신호에 연결된 예비 자리입니다. 밸브 케이블 끝이 PH면 J12에, XH면 J13에 <b>한 곳만</b> 꽂으세요. 1번이 + 입니다. 바꿔 꽂으면 보호 다이오드가 작동하지 않습니다.'},
- {id:'H4',title:'전류 센서 INA219 (GY-219)',where:'왼쪽 아래 · 실크 "INA219 VCC GND SCL SDA V− V+"',pos:[18,69],mode:'direct',
-  spec:[['기판 커넥터','2.54 mm 암 핀헤더 6P (PM254-1-06)'],['꽂는 것','GY-219 모듈의 수 핀헤더를 바로 꽂음'],['I2C 주소','0x40 (모듈 기본값)']],
-  board:{shape:'hdr',pins:[['1','+5V'],['2','GND'],['3','SCL (A5)'],['4','SDA (A4)'],['5','HEAT_P (히터 +)'],['6','VIN (+12V)']]},
-  dev:{title:'INA219 모듈 GY-219 (부품 면이 위)',groups:[{shape:'module',pins:[['VCC',''],['GND',''],['SCL',''],['SDA',''],['VIN−',''],['VIN+','']]}]},
-  wires:[],
-  note:'모듈 핀 이름이 VCC GND SCL SDA VIN− VIN+ 순서인지 확인하고 꽂으세요. <b>모듈의 파란 나사 단자(VIN+/VIN−)에는 아무것도 연결하지 않습니다.</b> 히터 전류가 이 핀헤더(5·6번)를 거쳐 흐릅니다.'},
- {id:'U6',title:'CO2 센서 A (CM1107N)',where:'오른쪽 위 첫 번째',pos:[113,12],mode:'cable',
-  spec:[['기판 커넥터','JST XH 4P (B4B-XH-A), 2.50 mm'],['기판 쪽 하우징','XH 4P 하우징 + 크림프 단자 4개'],['센서 쪽','CON4(전원 4핀)과 CON5(통신 5핀)으로 갈라짐. 센서 커넥터 규격은 실물 확인']],
-  board:{shape:'xh',pins:[['1','+5V'],['2','GND'],['3','CO2A_TX (센서 TX → D0)'],['4','CO2A_RX (D1 → 센서 RX)']]},
-  dev:{title:'CM1107N 센서 기판',groups:[
-   {name:'CON4 · 전원',shape:'smallhdr',pins:[['1','+5V'],['2','GND'],['3','A (알람)','',1],['4','PWM','',1]]},
-   {name:'CON5 · 통신',shape:'smallhdr',pins:[['1','+3.3V 출력','',1],['2','RX'],['3','TX'],['4','R/T (비우면 UART)','',1],['5','CA (수동 교정)','',1]]}]},
-  wires:[[0,0,0,'v5'],[1,0,1,'gnd'],[2,1,2,'tx'],[3,1,1,'rx']],
-  note:'기판 3번은 <b>센서 TX</b>, 4번은 <b>센서 RX</b>라는 뜻이므로 TX→3, RX→4로 연결합니다(그림에서 두 선이 엇갈리는 것은 센서 CON5의 핀 순서가 RX(2), TX(3)이기 때문입니다). <b>R/T(CON5-4)는 반드시 비워 두세요.</b> GND에 닿으면 I2C 모드가 됩니다. 센서 RX는 5 V 입력을 받을 수 있습니다. 펌웨어는 Serial1(D0/D1).'},
- {id:'U7',title:'CO2 센서 B (CM1107N)',where:'오른쪽 위 두 번째',pos:[113,28],mode:'cable',
-  spec:[['기판 커넥터','JST XH 4P (B4B-XH-A), 2.50 mm'],['기판 쪽 하우징','XH 4P 하우징 + 크림프 단자 4개'],['센서 쪽','CON4 + CON5, 센서 A와 같음']],
-  board:{shape:'xh',pins:[['1','+5V'],['2','GND'],['3','CO2B_TX (센서 TX → D8)'],['4','CO2B_RX (D9 → 센서 RX)']]},
-  dev:{title:'CM1107N 센서 기판',groups:[
-   {name:'CON4 · 전원',shape:'smallhdr',pins:[['1','+5V'],['2','GND'],['3','A (알람)','',1],['4','PWM','',1]]},
-   {name:'CON5 · 통신',shape:'smallhdr',pins:[['1','+3.3V 출력','',1],['2','RX'],['3','TX'],['4','R/T (비우면 UART)','',1],['5','CA (수동 교정)','',1]]}]},
-  wires:[[0,0,0,'v5'],[1,0,1,'gnd'],[2,1,2,'tx'],[3,1,1,'rx']],
-  note:'센서 A와 배선이 같고 Nano 쪽 핀만 D8(받기)/D9(보내기)입니다. 펌웨어는 SoftwareSerial(8, 9). 두 센서 중 어느 쪽이 방이고 어느 쪽이 마당인지 케이블에 표시해 두세요.'},
-];
-[['U2','T1',[113,42]],['U4','T2',[113,54]],['U5','T3',[113,66]],['U10','PLATE',[113,77]]].forEach(([id,silk,pos],i)=>CARDS.push({
-  id,title:'온도센서 '+silk+' (DS18B20)',where:'오른쪽 · 실크 "'+silk+'"',pos,mode:'cable',
-  spec:[['기판 커넥터','M2501V-03P 3P, 2.50 mm (JST XH와 호환)'],['꽂는 것','XH 3P 하우징 + 크림프 단자 3개'],['센서','DS18B20 방수 프로브, 3선']],
-  board:{shape:'xh',pins:[['1','GND'],['2','ONEWIRE (D2)'],['3','+5V']]},
-  dev:{title:'DS18B20 방수 프로브',groups:[{shape:'lead',body:'probe',pins:[['검정','GND'],['노랑','DQ (데이터)'],['빨강','VDD']]}]},
-  wires:[[0,0,0,'gnd'],[1,0,1,'dq'],[2,0,2,'v5']],
-  note: i===0 ? '온도센서 4개(T1, T2, T3, PLATE)는 모두 D2 하나의 버스에 연결되고 4.7 kΩ 풀업은 기판에 하나만 있습니다. <b>하나씩 꽂아 고유 주소(ROM 코드)를 읽고</b> 어디에 붙였는지 기록하세요. 프로브 선 색은 제품마다 다를 수 있습니다(DQ가 흰색인 제품도 있음). TO-92 칩을 직접 쓸 때는 평평한 면을 보고 왼쪽부터 GND, DQ, VDD입니다.' : (id==='U10'?'PLATE는 히터판(또는 펠티어 판) 표면 온도를 재는 용도입니다. 열전도 테이프로 판에 붙이세요.':null)}));
-
-const NANO_H1=[['1','D1 / TX','CO2 A 센서 RX로'],['2','D0 / RX','CO2 A 센서 TX에서 (U8 레벨변환·1 kΩ 경유)'],['3','RST',''],['4','GND','GND'],['5','D2','DS18B20 4개 (1-Wire)'],['6','D3',''],['7','D4',''],['8','D5',''],['9','D6','솔레노이드 MOSFET 게이트'],['10','D7','히터 MOSFET 게이트'],['11','D8','CO2 B 센서 TX에서 (U9 레벨변환·1 kΩ 경유)'],['12','D9','CO2 B 센서 RX로'],['13','D10',''],['14','D11',''],['15','D12','']];
-const NANO_H2=[['1','D13',''],['2','3V3',''],['3','AREF',''],['4','A0',''],['5','A1',''],['6','A2',''],['7','A3',''],['8','A4 / SDA','INA219 SDA'],['9','A5 / SCL','INA219 SCL'],['10','A6',''],['11','A7',''],['12','5V','연결 안 함 (센서 5V는 K7805에서 따로 공급)'],['13','RST',''],['14','GND','GND'],['15','VIN','+12V']];
-const BOM=[
- ['XH 3P 하우징 + XH 크림프 단자','4세트 (단자 12개)','온도센서 T1, T2, T3, PLATE'],
- ['XH 4P 하우징 + XH 크림프 단자','2세트 (단자 8개)','CO2 센서 A, B 기판 쪽'],
- ['CM1107N 쪽 케이블','2세트','센서 CON4(4P)·CON5(5P) 규격에 맞는 하우징. 센서에 같이 오는 케이블이 있으면 기판 쪽만 XH 4P로 바꿔 달기'],
- ['XH 2P 하우징 + XH 크림프 단자','1세트','밸브 (끝이 PH 2.0이면 대신 J12 사용)'],
- ['TO-220 로직레벨 N-MOSFET','2개','H3 히터, H5 밸브 (IRLZ44N 등)'],
- ['0.5 mm² 빨강/검정 전선','히터까지 길이','J11 ↔ 히터판 J1'],
- ['AWG 24~26 컬러 전선','센서 위치까지 길이','빨강·검정·노랑·초록·파랑 있으면 이 그림대로 맞추기 쉬움'],
- ['XH용 크림프 공구','1개','IWISS SN-28B 등'],
-];
-const FINAL=['ATX 파워를 끈 상태에서 모든 커넥터를 꽂았다','H3, H5에 로직레벨 MOSFET을 글자 면이 보이게(G D S) 꽂았다','밸브는 J12와 J13 중 한 곳에만 꽂았다','CM1107N 두 개 모두 R/T(CON5-4)를 비워 두었다','INA219 모듈의 나사 단자는 비워 두었다','멀티미터로 J10의 12V와 GND 사이가 단락되지 않았는지 확인했다','Nano를 빼고 먼저 전원을 넣어 센서 커넥터 +5V가 4.8~5.2 V인지 확인했다','전원을 끄고 Nano를 USB가 위로 오게 꽂았다'];
-
-const KEY='nano-wiring-checks-v1';
-let saved={};try{saved=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){}updateProg()}
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
-
-document.getElementById('legend').innerHTML=[['v12','+12V'],['v5','+5V / 전원 +'],['gnd','GND / 전원 −'],['tx','센서 TX → 기판'],['rx','기판 → 센서 RX'],['dq','1-Wire DQ']]
- .map(([k,t])=>`<span><i style="background:var(${C[k]})"></i>${t}</span>`).join('')+'<span><i style="background:var(--w-plug)"></i>직접 꽂는 부품</span>';
-
-/* ---------- 커넥터 모양 (세로 방향, 핀 i 의 중심 y = ys[i]) ---------- */
-const R=36; // 핀 간격(그림)
-function frame(x,y0,y1,w,fill,stroke,extra=''){return `<rect x="${x}" y="${y0}" width="${w}" height="${y1-y0}" rx="3" fill="var(${fill})" stroke="var(${stroke})" stroke-width="1.5" ${extra}/>`}
-function pin1mark(x,y){return `<path d="M${x} ${y-6} L${x+8} ${y} L${x} ${y+6} Z" fill="var(--warn)"/>`}
-const SHAPE={
- // 기판 쪽 (오른쪽 면이 결합면)
- molex(x,ys){const y0=ys[0]-R/2,y1=ys[ys.length-1]+R/2,w=46;
-   let s=`<path d="M${x} ${y0} H${x+w} V${y1} H${x} V${y1-12} L${x+8} ${y1-20} V${y0+20} L${x} ${y0+12} Z" fill="var(--nylon)" stroke="var(--nylon-edge)" stroke-width="1.5"/>`;
-   ys.forEach(y=>{s+=`<circle cx="${x+w-14}" cy="${y}" r="7" fill="var(--hdr)"/><circle cx="${x+w-14}" cy="${y}" r="3" fill="var(--metal)"/>`});
-   s+=`<text x="${x}" y="${y1+16}" font-size="11" fill="var(--muted)">◀ 깎인 모서리</text>`;return {s,w,out:x+w}},
- kf301(x,ys,flip){const y0=ys[0]-R/2,y1=ys[ys.length-1]+R/2,w=48;
-   let s=frame(x,y0,y1,w,'--term','--nylon-edge');
-   ys.forEach(y=>{const sx=flip?x+w-14:x+14, hx=flip?x:x+w-14;
-     s+=`<circle cx="${sx}" cy="${y}" r="9" fill="var(--metal)" stroke="var(--nylon-edge)"/><path d="M${sx-6} ${y} H${sx+6}" stroke="var(--hdr)" stroke-width="2.5"/>`;
-     s+=`<rect x="${hx}" y="${y-6}" width="14" height="12" fill="var(--hdr)"/>`;});
-   return {s,w,out:flip?x:x+w}},
- xh(x,ys){const y0=ys[0]-R/2,y1=ys[ys.length-1]+R/2,w=40;
-   let s=frame(x,y0,y1,w,'--nylon','--nylon-edge');
-   s+=`<rect x="${x+w-8}" y="${y0+4}" width="8" height="${y1-y0-8}" fill="none" stroke="var(--nylon-edge)"/>`;
-   ys.forEach(y=>{s+=`<rect x="${x+w-24}" y="${y-5}" width="10" height="10" fill="var(--pad)" stroke="var(--nylon-edge)"/>`;s+=`<rect x="${x+4}" y="${y-9}" width="6" height="18" fill="var(--nylon-edge)" opacity=".35"/>`});
-   s+=`<text x="${x}" y="${y0-6}" font-size="11" fill="var(--muted)">걸림턱</text>`;return {s,w,out:x+w}},
- hdr(x,ys){const y0=ys[0]-R/2+4,y1=ys[ys.length-1]+R/2-4,w=30;
-   let s=frame(x,y0,y1,w,'--hdr','--hdr-edge');
-   ys.forEach(y=>{s+=`<rect x="${x+9}" y="${y-6}" width="12" height="12" fill="#000" stroke="var(--metal)"/>`});return {s,w,out:x+w}},
- // 케이블 하우징 (왼쪽 면이 결합면, 오른쪽으로 전선이 나감)
- housing(x,ys){const y0=ys[0]-R/2+2,y1=ys[ys.length-1]+R/2-2,w=40;
-   let s=frame(x,y0,y1,w,'--nylon','--nylon-edge');
-   s+=`<path d="M${x+10} ${y0} V${y0-6} H${x+26} V${y0}" fill="var(--nylon)" stroke="var(--nylon-edge)"/>`;
-   ys.forEach(y=>{s+=`<rect x="${x+6}" y="${y-4}" width="22" height="8" fill="var(--metal)" stroke="var(--nylon-edge)"/>`});
-   return {s,w,out:x+w}},
- // 장치 쪽 (왼쪽 면에서 전선이 들어옴)
- molexplug(x,ys){const y0=ys[0]-R/2,y1=ys[ys.length-1]+R/2,w=46;
-   let s=`<path d="M${x} ${y0} H${x+w} V${y0+12} L${x+w-8} ${y0+20} V${y1-20} L${x+w} ${y1-12} V${y1} H${x} Z" fill="var(--nylon)" stroke="var(--nylon-edge)" stroke-width="1.5"/>`;
-   ys.forEach(y=>{s+=`<rect x="${x+6}" y="${y-5}" width="20" height="10" rx="5" fill="var(--metal)"/>`});return {s,w,in:x}},
- lead(x,ys){let s='';ys.forEach(y=>{s+=`<circle cx="${x+6}" cy="${y}" r="5" fill="var(--metal)" stroke="var(--nylon-edge)"/>`});return {s,w:12,in:x}},
- smallhdr(x,ys,nc){const y0=ys[0]-R/2+4,y1=ys[ys.length-1]+R/2-4,w=26;
-   let s=frame(x,y0,y1,w,'--nylon','--nylon-edge');
-   ys.forEach((y,i)=>{s+=`<rect x="${x+8}" y="${y-5}" width="10" height="10" fill="${nc&&nc[i]?'none':'var(--pad)'}" stroke="var(--nylon-edge)" ${nc&&nc[i]?'stroke-dasharray="2 2"':''}/>`});return {s,w,in:x}},
- to220(x,ys){const yc=(ys[0]+ys[ys.length-1])/2, bodyX=x+40, h=ys[ys.length-1]-ys[0]+40;
-   let s='';ys.forEach(y=>{s+=`<rect x="${x}" y="${y-2.5}" width="42" height="5" fill="var(--metal)"/>`});
-   s+=`<rect x="${bodyX}" y="${yc-h/2}" width="70" height="${h}" rx="3" fill="var(--hdr)" stroke="var(--hdr-edge)"/>`;
-   s+=`<rect x="${bodyX+70}" y="${yc-h/2}" width="40" height="${h}" fill="var(--metal)" stroke="var(--nylon-edge)"/><circle cx="${bodyX+92}" cy="${yc}" r="9" fill="var(--paper)" stroke="var(--nylon-edge)"/>`;
-   s+=`<text x="${bodyX+35}" y="${yc+4}" text-anchor="middle" font-size="11" fill="#e9e9e9" font-family="var(--f-mono)" transform="rotate(-90 ${bodyX+35} ${yc})">IRLZ44N</text>`;
-   return {s,w:150,in:x,labelX:bodyX+120}},
- module(x,ys){const y0=ys[0]-R/2,y1=ys[ys.length-1]+R/2,w=170;
-   let s=`<rect x="${x+16}" y="${y0}" width="${w-16}" height="${y1-y0}" rx="4" fill="var(--modpcb)"/>`;
-   ys.forEach(y=>{s+=`<rect x="${x}" y="${y-2.5}" width="26" height="5" fill="var(--pad)"/><rect x="${x+16}" y="${y-6}" width="10" height="12" fill="#111"/>`});
-   s+=`<rect x="${x+70}" y="${(y0+y1)/2-14}" width="28" height="28" fill="#111"/><text x="${x+84}" y="${(y0+y1)/2+42}" text-anchor="middle" font-size="10" fill="#dfe8ff">INA219</text>`;
-   s+=`<rect x="${x+w-34}" y="${y0+10}" width="26" height="${(y1-y0)*0.45}" fill="#2f6fd6" stroke="#0d2a66"/><text x="${x+w-21}" y="${y0+(y1-y0)*0.45+24}" text-anchor="middle" font-size="9" fill="#dfe8ff">나사단자</text><text x="${x+w-21}" y="${y0+(y1-y0)*0.45+36}" text-anchor="middle" font-size="9" fill="#ffd0b0">비움</text>`;
-   return {s,w,in:x,labelX:x+34}},
-};
-
-/* ---------- CO2 센서 연결 그림 (직관형) ---------- */
-function co2Pic(L,id,dRx,dTx){
- const W=1000,H=500;
- const bp=[200,236,272,308];                 // 기판 U 핀 y
- const c4=[110,146,182,218], c5=[290,326,362,398,434]; // 센서 CON4, CON5 핀 y
- const sx=680, hx=636;                        // 센서 본체 왼쪽, 센서 플러그 왼쪽
- let g=`<svg viewBox="0 0 ${W} ${H}" width="${W}" style="max-width:100%;height:auto;min-width:680px" role="img" aria-label="CO2 센서 ${L} 연결 그림">`;
- // 기판
- g+=`<rect x="8" y="150" width="190" height="210" rx="10" fill="var(--board)"/>`;
- g+=`<text x="20" y="176" font-size="15" font-weight="700" fill="var(--board-ink)">제어보드 ${id}</text>`;
- g+=`<text x="20" y="346" font-size="12" fill="var(--board-ink)" opacity=".8">→ Nano ${dRx} / ${dTx}</text>`;
- g+=`<rect x="150" y="${bp[0]-18}" width="40" height="${bp.length*36}" rx="3" fill="var(--nylon)" stroke="var(--nylon-edge)" stroke-width="1.5"/>`;
- const bl=['+5V','GND','TX','RX'];
- bp.forEach((y,i)=>{g+=`<rect x="166" y="${y-6}" width="12" height="12" fill="var(--pad)" stroke="var(--nylon-edge)"/><text x="140" y="${y+6}" text-anchor="end" font-size="15" fill="var(--board-ink)"><tspan font-family="var(--f-mono)" font-weight="700">${i+1}</tspan> ${bl[i]}</text>`});
- // 기판 쪽 하우징
- g+=`<rect x="192" y="${bp[0]-16}" width="40" height="${bp.length*36-4}" rx="3" fill="var(--nylon)" stroke="var(--nylon-edge)" stroke-width="1.5"/>`;
- g+=`<text x="212" y="${bp[3]+40}" text-anchor="middle" font-size="11" fill="var(--muted)">XH 4P 플러그</text>`;
- // 센서 본체
- g+=`<rect x="${sx}" y="40" width="300" height="440" rx="16" fill="var(--board)"/>`;
- g+=`<rect x="790" y="70" width="170" height="380" rx="26" fill="var(--steel)" stroke="var(--nylon-edge)" stroke-width="2"/>`;
- for(let r=0;r<9;r++)for(let k=0;k<4;k++){g+=`<circle cx="${820+k*36}" cy="${110+r*38}" r="5" fill="var(--hdr)" opacity=".55"/>`}
- g+=`<rect x="805" y="225" width="140" height="70" rx="8" fill="var(--paper)" opacity=".92"/>`;
- g+=`<text x="875" y="254" text-anchor="middle" font-size="20" font-weight="700" fill="var(--ink)">CM1107N</text>`;
- g+=`<text x="875" y="278" text-anchor="middle" font-size="13" fill="var(--ink)">CO2 센서 ${L}</text>`;
- g+=`<text x="875" y="472" text-anchor="middle" font-size="12" fill="var(--board-ink)">● 공기 구멍 · 막지 않기</text>`;
- // CON4
- const hdr=(ys,name)=>{let s=`<rect x="${sx+6}" y="${ys[0]-18}" width="30" height="${ys.length*36}" rx="3" fill="var(--hdr)" stroke="var(--hdr-edge)"/>`;
-   s+=`<text x="${sx+6}" y="${ys[0]-26}" font-size="13" font-weight="700" fill="var(--board-ink)">${name}</text>`;return s;};
- g+=hdr(c4,'CON4 (전원)'); g+=hdr(c5,'CON5 (통신)');
- const pin=(y,n,lab,state,col)=>{ // state: use | nc | never
-   let s=`<rect x="${sx+15}" y="${y-6}" width="12" height="12" fill="${state==='use'?'var(--pad)':'#555'}"/>`;
-   s+=`<text x="${sx+46}" y="${y+5}" font-size="14" fill="${state==='use'?'var(--board-ink)':'#cfd9d2'}" ${state==='use'?'font-weight="700"':''}><tspan font-family="var(--f-mono)">${n}</tspan> ${lab}</text>`;
-   if(state==='nc') s+=`<text x="${hx-8}" y="${y+5}" text-anchor="end" font-size="12" fill="var(--nc)">비움</text>`;
-   if(state==='never') s+=`<g><circle cx="${hx-30}" cy="${y}" r="11" fill="var(--warn)"/><path d="M${hx-35} ${y-5} L${hx-25} ${y+5} M${hx-25} ${y-5} L${hx-35} ${y+5}" stroke="#fff" stroke-width="2.5"/></g><text x="${hx-46}" y="${y+5}" text-anchor="end" font-size="12" font-weight="700" fill="var(--warn)">절대 연결하지 않기</text>`;
-   return s;};
- [['1','+5V','use'],['2','GND','use'],['3','A','nc'],['4','PWM','nc']].forEach((p,i)=>g+=pin(c4[i],...p));
- [['1','3.3V','nc'],['2','RX','use'],['3','TX','use'],['4','R/T','never'],['5','CA','nc']].forEach((p,i)=>g+=pin(c5[i],...p));
- // 센서 쪽 플러그 (CON4: 1~4, CON5: 1~5 덮음)
- g+=`<rect x="${hx}" y="${c4[0]-16}" width="40" height="${c4.length*36-4}" rx="3" fill="var(--nylon)" stroke="var(--nylon-edge)" stroke-width="1.5"/>`;
- g+=`<rect x="${hx}" y="${c5[0]-16}" width="40" height="${c5.length*36-4}" rx="3" fill="var(--nylon)" stroke="var(--nylon-edge)" stroke-width="1.5"/>`;
- // 전선 (기판 핀 i → 센서 핀)
- const W4=[[0,c4[0],'--w-5v','빨강 · +5V'],[1,c4[1],'--w-gnd','검정 · GND'],[2,c5[2],'--w-tx','초록 · 센서 TX'],[3,c5[1],'--w-rx','파랑 · 센서 RX']];
- W4.forEach(([i,y2,col,lab],k)=>{const y1=bp[i],x1=232,x2=hx;const m1=380+k*14,m2=500-k*14;
-  const d=`M${x1} ${y1} C${m1} ${y1},${m2} ${y2},${x2} ${y2}`;
-  g+=`<path d="${d}" stroke="var(--paper)" stroke-width="11" fill="none"/><path d="${d}" stroke="var(${col})" stroke-width="7" fill="none" stroke-linecap="round"/>`;
-  g+=`<circle cx="${x2+20}" cy="${y2}" r="5" fill="var(${col})" stroke="var(--nylon-edge)"/>`;
-  g+=`<text x="${x1+10}" y="${y1-8}" font-size="12" font-weight="600" fill="var(--ink)">${lab}</text>`;
- });
- g+=`<text x="420" y="470" text-anchor="middle" font-size="12" fill="var(--muted)">초록·파랑은 중간에서 한 번 엇갈립니다 (정상)</text>`;
- g+=`<text x="420" y="30" text-anchor="middle" font-size="13" fill="var(--muted)">케이블 한 개(4가닥)가 센서 쪽에서 두 개의 플러그로 갈라집니다</text>`;
- g+='</svg>';
- const steps=`<ol class="steps">
-  <li><span class="sw" style="background:var(--w-5v)"></span><span>기판 <b>${id} 1번</b> 빨강 → 센서 <b>CON4 1번 (+5V)</b></span></li>
-  <li><span class="sw" style="background:var(--w-gnd)"></span><span>기판 <b>${id} 2번</b> 검정 → 센서 <b>CON4 2번 (GND)</b></span></li>
-  <li><span class="sw" style="background:var(--w-tx)"></span><span>기판 <b>${id} 3번</b> 초록 → 센서 <b>CON5 3번 (TX)</b></span></li>
-  <li><span class="sw" style="background:var(--w-rx)"></span><span>기판 <b>${id} 4번</b> 파랑 → 센서 <b>CON5 2번 (RX)</b></span></li>
-  <li><span class="sw" style="background:var(--warn)"></span><span>나머지 핀은 비웁니다. 특히 <b>CON5 4번 R/T</b>는 어디에도 연결하지 않습니다.</span></li>
- </ol>`;
- return `<div class="panel scroll" style="padding:12px">${g}</div>${steps}<p class="hint">센서 그림은 모식도입니다. 실제 센서에서는 기판 인쇄의 CON4·CON5 글자와 1번 핀 표시(□)를 보고 위치를 맞추세요.</p>`;
-}
-
-function drawCard(c){
- const top=56, nB=c.board.pins.length;
- // 장치 핀 y 좌표
- const groups=c.dev.groups; let y=top; const gy=[];
- groups.forEach((g,gi)=>{if(gi>0)y+=26; if(g.name)y+=6; const arr=g.pins.map((p,i)=>y+i*R+R/2); gy.push(arr); y+=g.pins.length*R;});
- const devBottom=y;
- // 보드 핀 y: 장치 쪽 중앙에 맞춤(케이블), direct는 그대로
- const bH=nB*R; const bTop=c.mode==='direct'?top:Math.max(top, top+(devBottom-top-bH)/2);
- const by=c.board.pins.map((p,i)=>bTop+i*R+R/2);
- const H=Math.max(devBottom,bTop+bH)+24;
- const labelR=250; // 보드 라벨 오른쪽 끝
- let g='', W;
- // 보드 판(초록)
- g+=`<rect x="4" y="${Math.min(...by)-R/2-26}" width="${labelR+14}" height="${bH+38}" rx="6" fill="var(--board)"/>`;
- g+=`<text x="14" y="${Math.min(...by)-R/2-8}" font-size="13" font-weight="700" fill="var(--board-ink)">기판 ${esc(c.id)}</text>`;
- c.board.pins.forEach((p,i)=>{g+=`<text x="${labelR-4}" y="${by[i]+5}" text-anchor="end" font-size="13" fill="var(--board-ink)"><tspan font-family="var(--f-mono)" font-weight="600">${esc(p[0])}</tspan>  ${esc(p[1])}</text>`});
- const bx=labelR+20;
- const bs=SHAPE[c.board.shape](bx,by);
- g+=bs.s; g+=pin1mark(bx-12,by[0]);
- let wireStart=bs.out;
- if(c.mode==='cable' && c.board.shape!=='kf301'){const hs=SHAPE.housing(bs.out+2,by); g+=hs.s; wireStart=hs.out; g+=`<text x="${bs.out+2}" y="${Math.max(...by)+R/2+16}" font-size="11" fill="var(--muted)">케이블 하우징</text>`;}
- if(c.mode==='direct'){
-  const dg=groups[0], ds=SHAPE[dg.shape](bs.out+4,by);
-  g+=ds.s;
-  const lx=ds.labelX||(bs.out+4+ds.w+12);
-  if(dg.shape==='molexplug'){
-   dg.pins.forEach((p,i)=>{const nc=p[3];const x0=bs.out+4+ds.w;
-     if(!nc){g+=`<path d="M${x0} ${by[i]} H${x0+120}" stroke="var(${C[p[2]]})" stroke-width="5"/>`;}
-     else{g+=`<path d="M${x0} ${by[i]} H${x0+120}" stroke="var(--w-5v)" stroke-width="5" opacity=".35"/>`;}
-     g+=`<text x="${x0+130}" y="${by[i]+5}" font-size="13" fill="${nc?'var(--nc)':'var(--ink)'}">${esc(p[1])}${nc?' (기판 쪽 연결 없음)':''}</text>`;});
-   g+=`<text x="${bs.out+4+ds.w+128}" y="${Math.max(...by)+R/2+16}" font-size="12" fill="var(--muted)">→ ATX 파워서플라이</text>`;
-   W=bs.out+4+ds.w+430;
-  } else if(dg.shape==='to220'){
-   dg.pins.forEach((p,i)=>{g+=`<text x="${lx+8}" y="${by[i]+5}" font-size="13" fill="var(--ink)" font-weight="600">${esc(p[1])}</text>`});
-   W=lx+180;
-  } else if(dg.shape==='module'){
-   dg.pins.forEach((p,i)=>{g+=`<text x="${lx}" y="${by[i]+4}" font-size="11" fill="#dfe8ff" font-family="var(--f-mono)">${esc(p[0])}</text>`});
-   W=bs.out+4+ds.w+120;
-  }
-  g+=`<text x="${bs.out+4}" y="${Math.min(...by)-R/2-8}" font-size="13" font-weight="700" fill="var(--ink)">${esc(c.dev.title)}</text>`;
- } else {
-  const dx=wireStart+250;
-  g+=`<text x="${dx}" y="${top-26}" font-size="13" font-weight="700" fill="var(--ink)">${esc(c.dev.title)}</text>`;
-  if(groups.length>1) g+=`<rect x="${dx-14}" y="${top-14}" width="300" height="${devBottom-top+24}" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="5 4"/>`;
-  const dpos=[];
-  groups.forEach((dg,gi)=>{
-   const ncs=dg.pins.map(p=>!!p[3]);
-   const ds=dg.shape==='kf301'?SHAPE.kf301(dx,gy[gi],true):SHAPE[dg.shape](dx,gy[gi],ncs);
-   g+=ds.s; dpos[gi]=dg.shape==='kf301'?dx:dx;
-   if(dg.name) g+=`<text x="${dx}" y="${gy[gi][0]-R/2-2}" font-size="12" font-weight="600" fill="var(--muted)">${esc(dg.name)}</text>`;
-   g+=pin1mark(dx-14+(dg.shape==='lead'?-2:0), gy[gi][0]).replace(/M(\S+) /,(m,a)=>'M'+a+' ');
-   dg.pins.forEach((p,i)=>{const nc=p[3];g+=`<text x="${dx+ds.w+10}" y="${gy[gi][i]+5}" font-size="13" fill="${nc?'var(--nc)':'var(--ink)'}"><tspan font-family="var(--f-mono)" font-weight="600">${esc(p[0])}</tspan>  ${esc(p[1])}${nc?'  (비움)':''}</text>`});
-   if(dg.body==='probe'){const x=dx+150,yy=gy[gi];const yc=(yy[0]+yy[yy.length-1])/2;
-     g+=`<path d="M${x-10} ${yc} H${x+20}" stroke="var(--hdr)" stroke-width="10" stroke-linecap="round"/><rect x="${x+20}" y="${yc-9}" width="70" height="18" rx="9" fill="var(--steel)" stroke="var(--nylon-edge)"/><text x="${x+55}" y="${yc+30}" text-anchor="middle" font-size="11" fill="var(--muted)">스테인리스 프로브</text>`;}
-   if(dg.body==='solenoid'){const x=dx+130,yy=gy[gi];const yc=(yy[0]+yy[yy.length-1])/2;
-     g+=`<rect x="${x}" y="${yc-24}" width="60" height="48" rx="4" fill="var(--hdr)"/><rect x="${x+60}" y="${yc-12}" width="40" height="24" fill="var(--metal)"/><text x="${x+30}" y="${yc+4}" text-anchor="middle" font-size="11" fill="#eee">코일</text>`;}
-  });
-  // 전선
-  c.wires.forEach(([bi,gi,pi,col],k)=>{
-   const y1=by[bi],y2=gy[gi][pi],x1=wireStart,x2=dx-2, m=(x1+x2)/2, off=(k-(c.wires.length-1)/2)*6;
-   const d=`M${x1} ${y1} C${m+off} ${y1},${m+off} ${y2},${x2} ${y2}`;
-   g+=`<path d="${d}" stroke="var(--paper)" stroke-width="9" fill="none"/>`;
-   g+=`<path d="${d}" stroke="var(${C[col]})" stroke-width="5" fill="none"/>`;
-   g+=`<text x="${x1+14}" y="${y1-7}" font-size="11" fill="var(--muted)">${CN[col]}</text>`;
-  });
-  W=dx+320;
- }
- const svg=`<svg viewBox="0 0 ${W} ${H}" width="${W}" style="max-width:100%;height:auto;min-width:${Math.min(W,620)}px" role="img" aria-label="${esc(c.id)} 커넥터 배선 그림">${g}</svg>`;
- // 체크 항목
- let items=[];
- if(c.mode==='cable'){
-  items=c.wires.map(([bi,gi,pi,col])=>{const bp=c.board.pins[bi],dp=c.dev.groups[gi].pins[pi],gname=c.dev.groups[gi].name?c.dev.groups[gi].name.split(' ·')[0]+'-':'';
-   return {k:c.id+':'+bp[0],col:`var(${C[col]})`,txt:`기판 <code>${esc(c.id)}-${esc(bp[0])}</code> ${esc(bp[1])} → <b>${esc(gname+dp[0])} ${esc(dp[1])}</b> (${CN[col]})`}});
- } else {
-  items=c.board.pins.map((bp,i)=>{const dp=c.dev.groups[0].pins[i];if(dp[3])return null;
-   return {k:c.id+':'+bp[0],col:dp[2]?`var(${C[dp[2]]})`:'transparent',txt:`기판 <code>${esc(c.id)}-${esc(bp[0])}</code> ${esc(bp[1])} ↔ <b>${esc(dp[0])}</b>${dp[1]&&c.dev.groups[0].shape!=='to220'?' '+esc(dp[1]):''} 꽂힘 확인`}}).filter(Boolean);
- }
- const list=items.map((it,i)=>{const on=saved[it.k],iid='ck-'+c.id+'-'+i;return `<li><label class="${on?'done':''}" for="${iid}"><input type="checkbox" id="${iid}" data-k="${esc(it.k)}" ${on?'checked':''}><span class="sw" style="background:${it.col}"></span><span>${it.txt}</span></label></li>`}).join('');
- const pic=c.id==='U6'?co2Pic('A','U6','D0','D1'):c.id==='U7'?co2Pic('B','U7','D8','D9'):'';
- return `<article class="card view" data-view="${c.id}" data-title="${esc(c.title)}">
-  <div class="card-head"><span class="tag">${c.id}</span><h3>${esc(c.title)}</h3><span class="where">${esc(c.where)}</span></div>
-  ${pic}${pic?'<h3 style="margin:8px 0 0;font-size:15px">커넥터 상세</h3>':''}
-  <dl class="spec">${c.spec.map(s=>`<div><dt>${esc(s[0])}</dt><dd>${esc(s[1])}</dd></div>`).join('')}</dl>
-  <div class="scroll">${svg}</div>
-  <ul class="checks">${list}</ul>
-  ${c.note?`<div class="note">${c.note}</div>`:''}
- </article>`;
-}
-document.getElementById('cards').innerHTML=CARDS.map(drawCard).join('');
-
-/* ---------- 전체 지도 ---------- */
-function drawMap(){
- const S=6,ox=170,oy=40,W=120*S,H=90*S, vw=ox+W+290, vh=oy+H+70;
- const devName={J10:'ATX 파워',J11:'히터판',H3:'MOSFET',H5:'MOSFET',J13:'솔레노이드 밸브',H4:'INA219 모듈',U6:'CO2 센서 A (CM1107N)',U7:'CO2 센서 B (CM1107N)',U2:'DS18B20 T1',U4:'DS18B20 T2',U5:'DS18B20 T3',U10:'DS18B20 PLATE'};
- const col={J10:'v12',J11:'v5',H3:'plug',H5:'plug',J13:'v5',H4:'plug',U6:'tx',U7:'tx',U2:'dq',U4:'dq',U5:'dq',U10:'dq'};
- let g=`<svg viewBox="0 0 ${vw} ${vh}" width="${vw}" style="max-width:100%;height:auto;min-width:640px" role="img" aria-label="기판 커넥터 위치와 연결 장치">`;
- g+=`<rect x="${ox}" y="${oy}" width="${W}" height="${H}" rx="10" fill="var(--board)"/>`;
- g+=`<rect x="${ox+52*S}" y="${oy+8*S}" width="${22*S}" height="${44*S}" rx="4" fill="none" stroke="var(--board-ink)" stroke-dasharray="6 5" opacity=".7"/>`;
- g+=`<text x="${ox+63*S}" y="${oy+6*S}" text-anchor="middle" font-size="15" fill="var(--board-ink)">Arduino Nano R4 (USB ↑)</text>`;
- g+=`<text x="${ox+10}" y="${oy+20}" font-size="12" fill="var(--board-ink)" opacity=".7">120 × 90 mm</text>`;
- CARDS.forEach(c=>{const x=ox+c.pos[0]*S,y=oy+c.pos[1]*S;
-  g+=`<a href="#${c.id}"><rect x="${x-26}" y="${y-13}" width="52" height="26" rx="4" fill="var(--pad)"/><text x="${x}" y="${y+5}" text-anchor="middle" font-size="13" font-weight="700" fill="#1b211d" font-family="var(--f-mono)">${c.id}</text></a>`;});
- CARDS.filter(c=>c.pos[0]>90).forEach(c=>{const x=ox+c.pos[0]*S+26,y=oy+c.pos[1]*S,tx=ox+W+40;
-  g+=`<path d="M${x} ${y} H${tx}" stroke="var(${C[col[c.id]]})" stroke-width="4"/><rect x="${tx}" y="${y-14}" width="230" height="28" rx="5" fill="var(--paper)" stroke="var(--line)"/><text x="${tx+10}" y="${y+5}" font-size="14" fill="var(--ink)">${devName[c.id]}</text>`;});
- CARDS.filter(c=>c.pos[0]<=90&&c.pos[1]<=80).forEach(c=>{const x=ox+c.pos[0]*S-26,y=oy+c.pos[1]*S;
-  g+=`<path d="M${x} ${y} H${ox-30}" stroke="var(${C[col[c.id]]})" stroke-width="4"/><rect x="10" y="${y-14}" width="${ox-40}" height="28" rx="5" fill="var(--paper)" stroke="var(--line)"/><text x="20" y="${y+5}" font-size="14" fill="var(--ink)">${devName[c.id]}</text>`;});
- CARDS.filter(c=>c.pos[0]<=90&&c.pos[1]>80).forEach((c,i)=>{const x=ox+c.pos[0]*S,y=oy+c.pos[1]*S+13,ly=oy+H+(i%2?34:10);
-  g+=`<path d="M${x} ${y} V${ly-2}" stroke="var(${C[col[c.id]]})" stroke-width="4"/><text x="${x}" y="${ly+14}" text-anchor="middle" font-size="14" fill="var(--ink)">${devName[c.id]}</text>`;});
- document.getElementById('map').innerHTML=g+'</svg>';
-}
-
-function table(id,name,rows){document.getElementById(id).innerHTML=`<caption style="text-align:left;font-weight:700;padding:0 0 8px">${name}</caption><thead><tr><th>소켓 핀</th><th>Nano 핀</th><th>기판 연결</th></tr></thead><tbody>`+rows.map(r=>`<tr class="${r[2]?'':'unused'}"><td class="mono">${r[0]}</td><td class="mono">${r[1]}</td><td>${r[2]||'사용 안 함'}</td></tr>`).join('')+'</tbody>'}
-table('h1','H1 (오른쪽 줄, 디지털)',NANO_H1);table('h2','H2 (왼쪽 줄, 아날로그·전원)',NANO_H2);
-document.getElementById('bom').innerHTML='<thead><tr><th>품목</th><th>수량</th><th>용도</th></tr></thead><tbody>'+BOM.map(r=>`<tr><td>${r[0]}</td><td class="mono">${r[1]}</td><td>${r[2]}</td></tr>`).join('')+'</tbody>';
-document.getElementById('final').innerHTML=FINAL.map((t,i)=>{const k='final:'+i,on=saved[k];return `<li><label class="${on?'done':''}" for="fin-${i}"><input type="checkbox" id="fin-${i}" data-k="${k}" ${on?'checked':''}><span>${t}</span></label></li>`}).join('');
-document.addEventListener('change',e=>{const t=e.target;if(!t.dataset||!t.dataset.k)return;saved[t.dataset.k]=t.checked;t.closest('label').classList.toggle('done',t.checked);save()});
-document.getElementById('reset').addEventListener('click',()=>{saved={};save();document.querySelectorAll('input[data-k]').forEach(i=>{i.checked=false;i.closest('label').classList.remove('done')})});
-
-/* ---------- 메뉴와 화면 전환 ---------- */
-const MENU=[
- ['개요',[['map','기판 전체 지도']]],
- ['전원',[['J10','ATX 전원']]],
- ['CO2',[['U6','CO2 센서 A'],['U7','CO2 센서 B'],['co2','원리·통신']]],
- ['온도',[['U2','T1'],['U4','T2'],['U5','T3'],['U10','PLATE']]],
- ['히터',[['J11','히터판'],['H3','히터 MOSFET'],['H4','INA219']]],
- ['밸브',[['J13','솔레노이드 밸브'],['H5','밸브 MOSFET']]],
- ['정리',[['pins','Nano 핀표'],['parts','케이블 준비물'],['final','전원 넣기 전 확인']]],
-];
-const ORDER=MENU.flatMap(g=>g[1].map(x=>x[0]));
-document.getElementById('groups').innerHTML=MENU.map(([gname,items])=>`<div class="grp"><span>${gname}</span>${items.map(([v,t])=>`<button type="button" class="vbtn" data-go="${v}" aria-pressed="false">${t}${/^[JHU]\d/.test(v)?`<span class="id">${v}</span>`:''}<i class="ok" title="모두 확인"></i></button>`).join('')}</div>`).join('');
-function show(v){
- if(!ORDER.includes(v))v='map';
- document.querySelectorAll('.view').forEach(el=>{el.hidden=el.dataset.view!==v});
- document.querySelectorAll('.vbtn').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.go===v)));
- const i=ORDER.indexOf(v), t=document.querySelector(`.view[data-view="${v}"]`);
- document.getElementById('viewPos').textContent=`${i+1} / ${ORDER.length} · ${t?t.dataset.title:''}`;
- document.getElementById('prevBtn').disabled=i===0; document.getElementById('nextBtn').disabled=i===ORDER.length-1;
- try{localStorage.setItem('nano-wiring-view',v)}catch(e){}
-}
-function go(v){if(location.hash.slice(1)!==v){location.hash=v}else{show(v)}window.scrollTo({top:0})}
-document.getElementById('groups').addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)go(b.dataset.go)});
-document.getElementById('prevBtn').addEventListener('click',()=>{const i=ORDER.indexOf(location.hash.slice(1)||'map');if(i>0)go(ORDER[i-1])});
-document.getElementById('nextBtn').addEventListener('click',()=>{const i=ORDER.indexOf(location.hash.slice(1)||'map');if(i<ORDER.length-1)go(ORDER[Math.max(i,0)+1])});
-window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
-const tg=document.getElementById('menuToggle');
-tg.addEventListener('click',()=>{const open=tg.getAttribute('aria-expanded')==='true';tg.setAttribute('aria-expanded',String(!open));document.getElementById('groups').hidden=open});
-function markDone(){document.querySelectorAll('.vbtn').forEach(b=>{const view=document.querySelector(`.view[data-view="${b.dataset.go}"]`);if(!view)return;const ins=view.querySelectorAll('input[data-k]');b.classList.toggle('alldone',ins.length>0&&[...ins].every(i=>i.checked))})}
-function updateProg(){const all=document.querySelectorAll('input[data-k]');const done=[...all].filter(i=>i.checked).length;document.getElementById('prog').textContent=`전체 확인 ${done} / ${all.length}`;markDone()}
-drawMap();updateProg();
-let start=location.hash.slice(1);if(!start){try{start=localStorage.getItem('nano-wiring-view')||''}catch(e){}}
-show(start||'map');
-</script>
-
+<footer><div class="wrap">바늘구멍으로 황소바람이 들어올까? · 한지창 실험 장치 설계 문서 · 2026</div></footer>
 </body>
 </html>

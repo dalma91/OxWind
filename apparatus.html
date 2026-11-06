@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>황소바람 실험 장치</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: view tabs on top; 3D bench left; selected part + part list + view actions right; stacks on phones */
+:root{
+  --bg:#EDF0EF; --panel:#F8FAF9; --ink:#1C2426; --muted:#5D6A6C; --line:#CCD4D3;
+  --accent:#B8452F; --cold:#2F6F9F; --scene:#E3E8E7; --chip:#E6ECEB;
+  --f-display:"Gowun Batang","Nanum Myeongjo",Georgia,serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121719; --panel:#1A2124; --ink:#E4EAEA; --muted:#93A2A4; --line:#2E393C;
+  --accent:#E07357; --cold:#6FA8D6; --scene:#161D20; --chip:#243034; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121719; --panel:#1A2124; --ink:#E4EAEA; --muted:#93A2A4; --line:#2E393C;
+  --accent:#E07357; --cold:#6FA8D6; --scene:#161D20; --chip:#243034; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 28px}
+header{margin-bottom:12px}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(22px,3.2vw,30px);margin:0 0 4px;text-wrap:balance}
+header p{margin:0;color:var(--muted);max-width:76ch}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.tabs button{font:inherit;font-size:14px;font-weight:600;padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)}}
+.stage{position:relative;height:min(76vh,740px);min-height:380px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--scene)}
+.stage canvas{display:block;touch-action:none}
+#labels{position:absolute;inset:0;pointer-events:none}
+.lbl{font-size:11.5px;font-weight:500;color:var(--ink);background:color-mix(in srgb,var(--panel) 88%,transparent);border:1px solid var(--line);padding:1px 7px;border-radius:999px;white-space:nowrap;cursor:pointer;pointer-events:auto}
+.lbl:hover{border-color:var(--accent)}
+.dim{font-family:var(--f-mono);font-size:11px;font-weight:500;color:var(--cold);background:color-mix(in srgb,var(--panel) 90%,transparent);border:1px dashed var(--cold);padding:0 5px;border-radius:4px;white-space:nowrap;pointer-events:none}
+.tag{position:absolute;left:12px;top:10px;right:12px;font-size:12px;pointer-events:none;display:flex;gap:6px;flex-wrap:wrap}
+.tag span{padding:3px 9px;border-radius:999px;background:var(--panel);border:1px solid var(--line)}
+.hint{position:absolute;left:12px;bottom:10px;font-size:12px;color:var(--muted);pointer-events:none}
+aside{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
+.card h2{font-size:11.5px;font-weight:600;letter-spacing:.08em;color:var(--muted);margin:0 0 9px;text-transform:uppercase}
+#viewDesc{margin:0;font-size:13.5px}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+.btn{font:inherit;font-size:12.5px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);background:var(--chip);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--muted)}
+.btn.pri{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+button:focus-visible,label:focus-within{outline:2px solid var(--cold);outline-offset:2px}
+.tg{display:flex;align-items:center;gap:8px;font-size:13px;padding:3px 0;cursor:pointer}
+.tg input{accent-color:var(--cold);width:15px;height:15px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{font:inherit;font-size:12.5px;border:0;background:transparent;color:var(--ink);padding:5px 9px;cursor:pointer;font-family:var(--f-mono)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.row{display:flex;align-items:center;gap:10px;margin:8px 0;flex-wrap:wrap}
+.row .k{font-size:12.5px;color:var(--muted)}
+#info h3{font-family:var(--f-display);font-size:19px;margin:0 0 4px;font-weight:700}
+#info .spec{font-family:var(--f-mono);font-size:12px;color:var(--cold);margin-bottom:6px}
+#info p{margin:0 0 6px}
+#info .why{font-size:13px;color:var(--muted);margin:0}
+.plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px;max-height:340px;overflow:auto}
+.plist button{all:unset;display:flex;justify-content:space-between;gap:8px;width:100%;box-sizing:border-box;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:13px}
+.plist button:hover,.plist button[aria-current="true"]{background:var(--chip)}
+.plist button span:last-child{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);white-space:nowrap}
+.note{font-size:12px;color:var(--muted);margin:8px 0 0}
+.only{display:none}
+.only.on{display:block}
+@media (max-width:520px){.stage{height:62vh}.tabs button{padding:7px 12px;font-size:13px}}
+</style>
+</head>
+<body>
+
+
+<header>
+  <p style="margin:0 0 6px"><a href="index.html" style="color:var(--cold)">← 설계 문서로</a></p>
+  <h1>황소바람 실험 장치</h1>
+  <p>바늘구멍 한지 창으로 새는 열과 공기 교환을 재는 장치입니다. 위 탭으로 전체, 방, 마당, 연결부(창)를 골라 보고, 부품을 클릭하면 설명이 나옵니다. (2026-11-02 아크릴 가공 도면 기준)</p>
+</header>
+
+<div class="tabs" role="tablist" id="tabs">
+  <button role="tab" data-v="all" aria-selected="true">전체</button>
+  <button role="tab" data-v="room" aria-selected="false">방</button>
+  <button role="tab" data-v="yard" aria-selected="false">마당</button>
+  <button role="tab" data-v="joint" aria-selected="false">연결부 (창)</button>
+  <button role="tab" data-v="lid" aria-selected="false">마당 뚜껑</button>
+</div>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div id="labels"></div>
+    <div class="tag"><span id="tagA">전체</span><span id="tagB">한지: 구멍 3 mm</span></div>
+    <div class="hint">부품 클릭: 설명 · 끌기: 회전 · 오른쪽 끌기: 이동 · 휠: 확대</div>
+  </div>
+  <aside>
+    <section class="card">
+      <h2 id="viewTitle">전체</h2>
+      <p id="viewDesc"></p>
+      <div class="btns" style="margin-top:10px">
+        <button class="btn pri" id="bSwap">한지 교체</button>
+        <button class="btn" id="bSep">방 떼기 / 붙이기</button>
+        <button class="btn" id="bLid">뚜껑 열기 / 닫기</button>
+        <button class="btn only" id="bExp" data-only="joint">펼쳐 보기</button>
+      </div>
+      <div class="row"><span class="k">끼운 것</span>
+        <div class="seg" id="holeSeg"><button data-v="-1" aria-pressed="false">막힘</button><button data-v="0" aria-pressed="false">0</button><button data-v="1" aria-pressed="false">1</button><button data-v="3" aria-pressed="true">3</button><button data-v="5" aria-pressed="false">5 mm</button></div></div>
+      <label class="tg"><input type="checkbox" id="tCut"> 가운데 잘라 속 보기</label>
+      <label class="tg"><input type="checkbox" id="tFlow" checked> 공기 흐름</label>
+      <label class="tg"><input type="checkbox" id="tStraw"> 빨대 정류기 (선택)</label>
+      <label class="tg"><input type="checkbox" id="tSeal"> 밀폐선(폼 테이프) 강조</label>
+      <label class="tg"><input type="checkbox" id="tLbl" checked> 이름표</label>
+      <label class="tg"><input type="checkbox" id="tDim" checked> 치수 (mm)</label>
+    </section>
+
+    <section class="card" id="info" aria-live="polite"></section>
+
+    <section class="card">
+      <h2 id="plTitle">부품 (눌러서 보기)</h2>
+      <ul class="plist" id="plist"></ul>
+      <p class="note">링크 끝에 #room, #yard, #joint, #lid를 붙이면 그 화면으로 바로 열립니다.</p>
+    </section>
+  </aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
+<script>
+(function(){
+const stage=document.getElementById('stage');
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.localClippingEnabled=true;stage.prepend(renderer.domElement);
+const lr=new THREE.CSS2DRenderer();lr.domElement.style.position='absolute';lr.domElement.style.inset='0';lr.domElement.style.pointerEvents='none';document.getElementById('labels').appendChild(lr.domElement);
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(34,1,1,6000);
+const controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.minDistance=40;controls.maxDistance=2400;
+scene.add(new THREE.HemisphereLight(0xffffff,0x8899aa,.8));
+const sun=new THREE.DirectionalLight(0xffffff,.75);sun.position.set(-300,700,500);scene.add(sun);
+const fill=new THREE.DirectionalLight(0xffffff,.3);fill.position.set(500,200,-400);scene.add(fill);
+const dimMat=new THREE.LineBasicMaterial({color:new THREE.Color(css('--cold')||'#2F6F9F'),depthTest:false,transparent:true});
+function theme(){scene.background=new THREE.Color(css('--scene')||'#E3E8E7');dimMat.color.set(css('--cold')||'#2F6F9F');}
+theme();matchMedia('(prefers-color-scheme: dark)').addEventListener('change',theme);
+new MutationObserver(theme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+const clipPlane=new THREE.Plane(new THREE.Vector3(0,0,-1),0);const allMats=[];
+function M(o){const m=new THREE.MeshStandardMaterial(Object.assign({roughness:.5},o));allMats.push(m);return m;}
+const mat={
+  acr:M({color:0xcfe4ee,transparent:true,opacity:.2,roughness:.1,depthWrite:false,side:THREE.DoubleSide}),
+  acrJ:M({color:0x9cc9de,transparent:true,opacity:.45,roughness:.1,side:THREE.DoubleSide}),
+  flange:M({color:0xe2b36a,transparent:true,opacity:.8,roughness:.15}),
+  xps:M({color:0xf2a6c0,transparent:true,opacity:.55,roughness:.95,depthWrite:false}),
+  alu:M({color:0x2a2e32,metalness:.4,roughness:.5}),
+  pel:M({color:0xf1f1ec,roughness:.6}),
+  sink:M({color:0x9aa3aa,metalness:.7,roughness:.35}),
+  fan:M({color:0x26292c,roughness:.6}),
+  straw:M({color:0xf7f7f2,transparent:true,opacity:.5,roughness:.5,depthWrite:false}),
+  wood:M({color:0xc9b28d,roughness:.85}),
+  pcb:M({color:0x2f6b3a,roughness:.6}),
+  sensor:M({color:0x3a6f9e,roughness:.5}),
+  probe:M({color:0xc7ccd0,metalness:.85,roughness:.25}),
+  tube:M({color:0xd9dde0,roughness:.5,side:THREE.DoubleSide}),
+  silicone:M({color:0xe8e3d4,roughness:.6,transparent:true,opacity:.85}),
+  cup:M({color:0xffffff,roughness:.8,side:THREE.DoubleSide}),
+  foam:M({color:0x22272a,roughness:.95}),
+  magnet:M({color:0xb9c0c6,metalness:.9,roughness:.25}),
+  film:M({color:0xbfd3dc,transparent:true,opacity:.45,roughness:.1,side:THREE.DoubleSide}),
+  hole:new THREE.MeshBasicMaterial({color:0x101418,side:THREE.DoubleSide}),
+  flow:new THREE.MeshBasicMaterial({color:0x2f8fd0}),
+  flowWarm:new THREE.MeshBasicMaterial({color:0xd0643a}),
+};
+const cv=document.createElement('canvas');cv.width=cv.height=256;const cx=cv.getContext('2d');
+cx.fillStyle='#efe6d2';cx.fillRect(0,0,256,256);
+for(let i=0;i<420;i++){cx.strokeStyle=Math.random()<.5?'rgba(255,255,255,.55)':'rgba(170,150,110,.22)';cx.lineWidth=Math.random()*1.2+.3;cx.beginPath();let x=Math.random()*256,y=Math.random()*256;cx.moveTo(x,y);cx.bezierCurveTo(x+Math.random()*40-20,y+Math.random()*40-20,x+Math.random()*60-30,y+Math.random()*60-30,x+Math.random()*80-40,y+Math.random()*80-40);cx.stroke();}
+mat.hanji=M({map:new THREE.CanvasTexture(cv),side:THREE.DoubleSide,roughness:.95,transparent:true,opacity:.93});
+
+/* ---------- builders: every object carries tags (which tabs show it) ---------- */
+let T='Y';               /* current tag string: Y=yard R=room J=joint U=lid L=lab-only (shown in 전체) */
+const pickable=[],css2d=[],tagged=[];
+function tagIt(o,cond){o.userData.tags=T;if(cond)o.userData.cond=cond;tagged.push(o);return o;}
+function G(parent){const g=new THREE.Group();(parent||scene).add(g);return g;}
+function B(g,key,m,x1,x2,y1,y2,z1,z2){const me=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(x2-x1),Math.abs(y2-y1),Math.abs(z2-z1)),m);me.position.set((x1+x2)/2,(y1+y2)/2,(z1+z2)/2);me.userData.part=key;g.add(me);pickable.push(me);return tagIt(me);}
+function Cyl(g,key,m,r,len,pos,axis,seg,open){const me=new THREE.Mesh(new THREE.CylinderGeometry(r,r,len,seg||28,1,!!open),m);if(axis==='x')me.rotation.z=Math.PI/2;if(axis==='z')me.rotation.x=Math.PI/2;me.position.set(...pos);me.userData.part=key;g.add(me);pickable.push(me);return tagIt(me);}
+/* right-triangle gusset in the x–y plane (legs a along +x, b along +y), d thick along +z from z0 */
+function Tri(g,key,m,x0,y0,z0,a,b,d){const sh=new THREE.Shape();sh.moveTo(0,0);sh.lineTo(a,0);sh.lineTo(0,b);sh.lineTo(0,0);const me=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:d,bevelEnabled:false}),m);me.position.set(x0,y0,z0);me.userData.part=key;g.add(me);pickable.push(me);return tagIt(me);}
+/* square plate in the y–z plane (centre cy,cz) with a centred square window */
+function plateX(g,key,m,x1,x2,cy,cz,h,w){return [B(g,key,m,x1,x2,cy-h,cy-w,cz-h,cz+h),B(g,key,m,x1,x2,cy+w,cy+h,cz-h,cz+h),B(g,key,m,x1,x2,cy-w,cy+w,cz-h,cz-w),B(g,key,m,x1,x2,cy-w,cy+w,cz+w,cz+h)];}
+function lbl(g,text,p,key){const d=document.createElement('div');d.className='lbl';d.textContent=text;d.addEventListener('click',()=>select(key));const o=new THREE.CSS2DObject(d);o.position.set(...p);o.userData.kind='lbl';g.add(o);css2d.push(o);return tagIt(o);}
+function dTag(g,p,text){const d=document.createElement('div');d.className='dim';d.textContent=text;const o=new THREE.CSS2DObject(d);o.position.set(...p);o.userData.kind='dim';g.add(o);css2d.push(o);return tagIt(o);}
+function dim(g,a,b,text,t){a=new THREE.Vector3(...a);b=new THREE.Vector3(...b);t=new THREE.Vector3(...(t||[0,5,0]));
+  const l=new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints([a,b,a.clone().add(t),a.clone().sub(t),b.clone().add(t),b.clone().sub(t)]),dimMat);l.renderOrder=10;l.userData.kind='dimline';g.add(l);tagIt(l);dTag(g,a.clone().add(b).multiplyScalar(.5).toArray(),text);}
+
+/* =====================  coordinates (mm)  =====================
+   x: room(−) … yard(+). Yard interior x 0..240, y 70..230, z −80..80 (z− = back wall). Window centre (y 140, z 0).
+   Drawing X (from the window-side outer face) = model x + 3.
+   Yard left wall x −3..0 · foam −3.95..−3 · hanji −4 · foam −5..−4.05 · flange R −8..−5 · room box interior x −158..−8 */
+const WY=140, MAGP=[[68,68],[68,-68],[-68,68],[-68,-68],[0,71],[0,-71],[71,0],[-71,0]];
+
+/* ---------------- YARD module ---------------- */
+const gYard=G();
+T='YU';
+B(gYard,'yardbox',mat.acr,0,240,67,70,-83,83);
+[1,-1].forEach(s=>B(gYard,'yardbox',mat.acr,-3,243,70,230,s*80,s*83));
+B(gYard,'yardbox',mat.acr,240,243,67,230,-80,80);
+[1,-1].forEach(s=>B(gYard,'xps',mat.xps,-3,253,57,230,s*83,s*93));
+B(gYard,'xps',mat.xps,243,253,57,230,-83,83);B(gYard,'xps',mat.xps,-3,243,57,67,-83,83);
+T='Y';
+[[8,8],[8,-8],[232,8],[232,-8]].forEach(([x,s])=>{const zz=s>0?80:-80;B(gYard,'legs',mat.wood,x-8,x+8,0,57,zz-8,zz+8);});
+/* aluminium plates: bottom 238×158, front 230×150, back 205×130 (clears inlet and cable holes) */
+B(gYard,'alplate',mat.alu,0.5,238.5,70,71,-79,79);
+B(gYard,'alplate',mat.alu,5,235,71,221,79,80);
+B(gYard,'alplate',mat.alu,5,210,71,201,-80,-79);
+/* Peltier modules: 6 seats (front, back, bottom × drawing X 80/160). Ceramic 24×24 passes the 26×26 hole, heatsink 40×40 outside */
+[77,157].forEach(x=>{[1,-1].forEach(s=>{B(gYard,'peltier',mat.pel,x-12,x+12,138,162,s*80,s*84);B(gYard,'peltier',mat.sink,x-20,x+20,130,170,s*93,s*113);});
+  B(gYard,'peltier',mat.pel,x-12,x+12,66,70,-12,12);B(gYard,'peltier',mat.sink,x-20,x+20,37,57,-20,20);});
+/* fan on the window side of the fan plate; plate sits in a 1.5 mm groove; 2 gussets behind */
+B(gYard,'fan',mat.fan,192,217,100,180,-40,40);
+Cyl(gYard,'fan',new THREE.MeshBasicMaterial({color:0x3d4248}),36,1,[191.5,WY,0],'x');
+/* Y6 fan plate (amber) and Y7 gussets (red-orange): drawn in solid colours so they stand out */
+const fanplMat=M({color:0xe8a33c,transparent:true,opacity:.9,roughness:.25,side:THREE.DoubleSide});
+const gussetMat=M({color:0xd4542a,roughness:.35,side:THREE.DoubleSide});
+B(gYard,'fanplate',fanplMat,217,220,68.5,195,-50,50);
+Tri(gYard,'gusset',gussetMat,220,70,47,18,40,3);Tri(gYard,'gusset',gussetMat,220,70,-50,18,40,3);
+/* groove in the floor (1.5 deep) shown as a dark strip around the plate foot */
+B(gYard,'fanplate',mat.hole,216.6,220.4,68.4,70.05,-50.2,50.2);
+const straw=B(gYard,'straw',mat.straw,162,192,99,181,-41,41);straw.userData.cond=()=>strawOn;
+/* back wall: inlet φ20 behind the fan, cable holes φ10 (sensors) and φ12 (fan) at height 140 */
+Cyl(gYard,'inlet',mat.hole,10,1,[225,150,-93.5],'z');
+Cyl(gYard,'inlet',mat.tube,10.5,11,[225,150,-88],'z',28,true);
+Cyl(gYard,'cable',mat.hole,5,1,[57,210,-93.5],'z');Cyl(gYard,'cable',mat.hole,6,1,[202,210,-93.5],'z');
+/* yard sensors */
+Cyl(gYard,'T3',mat.probe,2.5,40,[45,96,-40],'z');Cyl(gYard,'T3',mat.probe,3,6,[45,96,-20],'z');
+B(gYard,'co2y',mat.sensor,25,55,205,225,-77,-55);
+/* yard left wall (shared with the joint) */
+T='YJ';
+plateX(gYard,'leftwall',mat.acrJ,-3,0,148.5,0,81.5,50); /* drawn as 163 × 163 around the window (wall continues to the box edges) */
+B(gYard,'leftwall',mat.acrJ,-3,0,67,70,-83,83);
+const magY=MAGP.map(([dy,dz])=>Cyl(gYard,'magnet',mat.magnet,5,5,[-0.5,WY+dy,dz],'x'));
+const foamY=plateX(gYard,'foam',mat.foam,-3.95,-3,WY,0,65,55);
+T='Y';
+lbl(gYard,'마당 (3T + 아이소핑크)',[150,262,-70],'yardbox');
+lbl(gYard,'팬',[205,192,40],'fan');
+lbl(gYard,'Y6 팬 고정판',[218,208,-62],'fanplate');
+lbl(gYard,'Y7 보강대 ×2',[236,124,64],'gusset');
+T='Y';dTag(gYard,[229,62,64],'18 × 40');dTag(gYard,[218,200,0],'100 × 126.5');
+lbl(gYard,'펠티어 ×6 자리',[80,175,110],'peltier');
+lbl(gYard,'검정 알루미늄 판',[120,80,-60],'alplate');
+lbl(gYard,'T3 마당 온도',[45,104,-58],'T3');
+lbl(gYard,'CO2 센서 #2',[40,232,-66],'co2y');
+lbl(gYard,'공기 입구 φ20',[225,168,-100],'inlet');
+lbl(gYard,'선 구멍 (센서 φ10 · 팬 φ12)',[130,222,-104],'cable');
+const strawLbl=lbl(gYard,'빨대 정류기',[177,192,-40],'straw');strawLbl.userData.cond=()=>strawOn;
+T='YJ';lbl(gYard,'마당 왼쪽 벽 3T',[-1,238,-70],'leftwall');
+T='Y';
+dim(gYard,[0,40,90],[240,40,90],'마당 내부 240',[0,5,0]);
+dim(gYard,[250,70,95],[250,230,95],'160',[0,0,5]);
+dim(gYard,[250,62,-80],[250,62,80],'160',[0,5,0]);
+dim(gYard,[-12,0,-95],[-12,57,-95],'다리 57',[0,0,5]);
+
+/* ---------------- YARD LID: rim (glued) + foam + clear 3T lid + loose isopink cover + 4 binder clips on ears ----------------
+   rim 3T y 230..233, outer x −3..253 (window side flush with the left wall) z ±93, opening x 10..240 z ±80,
+   ears z 93..118 at x 41..81 / 169..209 · foam y 233..234 · lid 3T y 234..237 · isopink cover y 237..247 (body only) */
+T='YU';
+const EARS=[[61,1],[189,1],[61,-1],[189,-1]];
+const gRim=G(gYard);
+[1,-1].forEach(s=>B(gRim,'rim',mat.acrJ,-3,253,230,233,s*80,s*93));
+B(gRim,'rim',mat.acrJ,-3,10,230,233,-80,80);B(gRim,'rim',mat.acrJ,240,253,230,233,-80,80);
+EARS.forEach(([x,s])=>B(gRim,'rim',mat.acrJ,x-20,x+20,230,233,s*93,s*118));
+const lidFoam=[];
+[1,-1].forEach(s=>lidFoam.push(B(gRim,'lidfoam',mat.foam,-1,251,233,233.9,s*81,s*91)));
+lidFoam.push(B(gRim,'lidfoam',mat.foam,-1,9,233,233.9,-81,81));lidFoam.push(B(gRim,'lidfoam',mat.foam,241,251,233,233.9,-81,81));
+const gLid=G(gYard);
+const lidGlass=M({color:0xd8ecf4,transparent:true,opacity:.28,roughness:.05,depthWrite:false,side:THREE.DoubleSide});
+B(gLid,'lid',lidGlass,-3,253,234,237,-93,93);
+EARS.forEach(([x,s])=>B(gLid,'lid',mat.acrJ,x-20,x+20,234,237,s*93,s*118));
+B(gLid,'lidxps',mat.xps,-3,253,237,247,-93,93);
+const clipBlack=M({color:0x1b1d1f,metalness:.5,roughness:.35});
+const clipGs=EARS.map(([x,s])=>{const pv=G(gYard);pv.position.set(x,0,0);if(s<0)pv.rotation.y=Math.PI;const c=G(pv);
+  B(c,'lidclip',clipBlack,-20.5,20.5,237,238.2,98,118);      /* upper jaw on the lid ear */
+  B(c,'lidclip',clipBlack,-20.5,20.5,227.8,229,98,118);      /* lower jaw under the rim ear */
+  B(c,'lidclip',clipBlack,-20.5,20.5,227.8,238.2,118,124);   /* spine */
+  [-14,14].forEach(dx=>{Cyl(c,'lidclip',mat.probe,.9,22,[dx,249,121],'y',8);});
+  return c;});
+lbl(gRim,'뚜껑 받침 테두리 3T',[-20,226,-110],'rim');
+lbl(gRim,'뚜껑 폼 테이프',[250,236,-60],'lidfoam');
+lbl(gLid,'투명 뚜껑 3T',[60,240,108],'lid');
+lbl(gLid,'뚜껑 위 아이소핑크 10T',[120,262,0],'lidxps');
+lbl(gYard,'클립 41 mm ×4',[189,256,124],'lidclip');
+T='U';
+dim(gYard,[-3,262,-120],[253,262,-120],'뚜껑 256',[0,5,0]);
+dim(gYard,[262,262,-93],[262,262,93],'186',[5,0,0]);
+dTag(gYard,[61,240,140],'클립 귀 40 × 25');
+dTag(gYard,[-40,240,0],'두께: 테두리 3 + 폼 1 + 뚜껑 3 (+ 아이소핑크 10)');
+
+/* ---------------- HANJI (between the modules) ---------------- */
+const gH=G();
+T='J';
+const hanji=new THREE.Mesh(new THREE.PlaneGeometry(140,140),mat.hanji);hanji.rotation.y=Math.PI/2;hanji.position.set(-4,WY,0);hanji.userData.part='hanji';gH.add(hanji);pickable.push(hanji);tagIt(hanji,()=>hole>=0);
+const film=new THREE.Mesh(new THREE.PlaneGeometry(140,140),mat.film);film.rotation.y=Math.PI/2;film.position.set(-4,WY,0);film.userData.part='film';gH.add(film);pickable.push(film);tagIt(film,()=>hole<0);
+const holeM=[-4.1,-3.9].map(x=>{const h=new THREE.Mesh(new THREE.CircleGeometry(.5,32),mat.hole);h.rotation.y=Math.PI/2;h.position.set(x,WY,0);gH.add(h);return tagIt(h,()=>hole>0);});
+lbl(gH,'한지 140 × 140',[-5,WY+80,40],'hanji');
+
+/* ---------------- ROOM module (moves as one) ---------------- */
+const gRoom=G();
+T='RJ';
+plateX(gRoom,'flange',mat.flange,-8,-5,WY,0,85,50);
+const magR=MAGP.map(([dy,dz])=>Cyl(gRoom,'magnet',mat.magnet,5,5,[-7.5,WY+dy,dz],'x'));
+const foamR=plateX(gRoom,'foam',mat.foam,-5,-4.05,WY,0,65,55);
+lbl(gRoom,'방 플랜지 R 3T',[-6.5,WY+96,46],'flange');
+lbl(gRoom,'자석 8쌍',[-6,WY+78,78],'magnet');
+lbl(gRoom,'폼 테이프 1T',[-5,WY-62,-70],'foam');
+T='R';
+B(gRoom,'roombox',mat.acr,-160,-8,88,90,-52,52);B(gRoom,'roombox',mat.acr,-160,-8,190,192,-52,52);
+[1,-1].forEach(s=>B(gRoom,'roombox',mat.acr,-160,-8,90,190,s*50,s*52));
+B(gRoom,'roombox',mat.acr,-160,-158,88,192,-52,52);
+B(gRoom,'heater',mat.pcb,-113,-53,100,160,-0.8,0.8);
+/* every room hole is in the end wall R5 (outer face x −160). Seen from outside: right = front (+z); v = height from the R5 bottom edge (floor = v 2) */
+const EW=-158;
+/* T1: probe φ6 pushed through a snug φ6.2 hole, 50 above the floor, tip ~35 mm inside, beside the heater */
+Cyl(gRoom,'T1',mat.probe,3,45,[-145.5,140,-26],'x');
+B(gRoom,'co2r',mat.sensor,-150,-120,90,102,22,44);
+/* CO2 supply: tube through the end-wall hole φ5.5 (8 above the floor); only the 27G needle is inside */
+Cyl(gRoom,'needle',mat.probe,.4,13,[EW+6.5,98,-30],'x');Cyl(gRoom,'needle',mat.silicone,2.5,4,[EW-1,98,-30],'x');
+const needleTube=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(EW-2,98,-30),new THREE.Vector3(-175,98,-30),new THREE.Vector3(-195,94,-40),new THREE.Vector3(-210,90,-55)]),24,2.5,8,false),mat.silicone);
+needleTube.userData.part='needle';gRoom.add(needleTube);pickable.push(needleTube);tagIt(needleTube);
+/* cable holes φ8: heater (centre, 14 above the floor) and CO2 #1 (front side) */
+[[104,0],[104,30]].forEach(([y,z])=>Cyl(gRoom,'roomcable',mat.hole,4,1,[-160.6,y,z],'x'));
+const wireMat=M({color:0x2b2b2b,roughness:.7});
+[[[-113,104,0],[-140,104,0],[EW,104,0],[-185,104,0],[-205,100,0]],
+ [[-135,102,33],[-150,104,30],[EW,104,30],[-185,104,30],[-205,100,32]],
+ [[-168,140,-26],[-185,138,-26],[-205,130,-22]]].forEach(pts=>{
+  const w=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(q=>new THREE.Vector3(...q))),20,1.2,6,false),wireMat);w.userData.part='roomcable';gRoom.add(w);pickable.push(w);tagIt(w);});
+/* outlet φ18 (adapter bore ~16): end wall, 15 below the ceiling, offset to the front so the heater plume does not head straight out */
+Cyl(gRoom,'outlet',mat.tube,9,30,[-175,173,24],'x',28,true);
+const cup=new THREE.Mesh(new THREE.CylinderGeometry(12,10,12,28,1,true),mat.cup);cup.rotation.z=Math.PI/2;cup.position.set(-196,173,24);cup.userData.part='outlet';gRoom.add(cup);pickable.push(cup);tagIt(cup);
+lbl(gRoom,'방 (2T)',[-90,208,-40],'roombox');
+lbl(gRoom,'PCB 히터판',[-83,170,8],'heater');
+lbl(gRoom,'T1 방 온도',[-140,WY+12,-40],'T1');
+lbl(gRoom,'CO2 센서 #1',[-135,112,60],'co2r');
+lbl(gRoom,'CO2 니들 · 튜브',[-205,82,-62],'needle');
+lbl(gRoom,'끝벽 선 구멍',[-205,118,10],'roomcable');
+lbl(gRoom,'출구 φ18 + 가림막',[-205,195,30],'outlet');
+dim(gRoom,[-158,74,60],[-8,74,60],'방 내부 150',[0,5,0]);
+dim(gRoom,[-170,90,60],[-170,190,60],'100',[0,0,5]);
+dim(gRoom,[-6.5,WY-96,-85],[-6.5,WY-96,85],'R 170',[0,5,0]);
+/* stand (does not move) */
+const gStand=G();T='R';
+B(gStand,'stand',mat.wood,-155,-25,0,86,-46,46);B(gStand,'stand',mat.acr,-155,-25,86,88,-46,46);
+lbl(gStand,'받침대',[-90,40,50],'stand');
+
+/* lab sensor */
+const gLab=G();T='L';
+Cyl(gLab,'T4',mat.probe,1.5,40,[-260,WY,0],'y');B(gLab,'T4',mat.wood,-270,-250,0,8,-10,10);Cyl(gLab,'T4',mat.probe,.8,WY-8,[-260,(WY+8)/2,0],'y');
+lbl(gLab,'T4 실험실 온도',[-260,WY+30,0],'T4');
+
+/* joint-only dimensions */
+T='J';
+dim(gYard,[1,WY-50,-60],[1,WY+50,-60],'창 100',[0,0,5]);
+dTag(gYard,[-3,WY-74,40],'폼 고리 55~65');
+dTag(gYard,[-4,WY-105,0],'겹침: 벽 3 + 폼 1 + 한지 + 폼 1 + R 3');
+
+/* ---------------- air flow particles ---------------- */
+const gFlow=G();T='YRJL';
+const flowPath=new THREE.CatmullRomCurve3([[225,150,-110],[225,150,-70],[230,145,-30],[222,140,0],[180,140,0],[100,140,0],[20,140,0],[-4,140,0],[-30,145,0],[-80,162,12],[-130,170,20],[-158,173,24],[-190,173,24],[-222,173,24]].map(p=>new THREE.Vector3(...p)));
+const dots=[];for(let i=0;i<46;i++){const d=new THREE.Mesh(new THREE.SphereGeometry(2,10,8),mat.flow);gFlow.add(d);dots.push({m:d,u:i/46,j:new THREE.Vector3((Math.random()-.5)*14,(Math.random()-.5)*14,(Math.random()-.5)*14)});}
+tagIt(gFlow,()=>flowOn);
+
+/* ---------------- info ---------------- */
+const INFO={
+  yardbox:{n:'마당 상자',s:'아크릴 3T · 내부 240 × 160 × 160 · 아크릴 접착제 조립',d:'겨울 바깥을 흉내 내는 차가운 공간입니다. 펠티어로 판을 식혀 마당 공기를 10~12 °C로 맞추고, 팬이 바람을 한지 쪽으로 보냅니다.',w:'부피 약 6 L로 방의 4배라 CO2가 섞여도 농도가 천천히 변합니다. 바닥 판 위에 앞·뒷벽, 그 사이에 좌·우벽을 세워 붙이고, 굳은 뒤 안쪽 이음매에 중성 실리콘을 두릅니다.'},
+  lid:{n:'마당 뚜껑',s:'투명 아크릴 3T 한 장 · 본체 256 × 186 · 클립 귀 4개 (40 × 25)',d:'안을 들여다볼 수 있는 투명 뚜껑입니다. 받침 테두리 위 폼 테이프에 얹고 클립 4개로 누릅니다. 클립을 빼면 들어 올려 마당 안(팬, 센서, 펠티어 판)을 점검할 수 있습니다.',w:'단열은 위에 얹는 아이소핑크 10T가 맡습니다. 뚜껑을 열면 찬 공기가 빠지니 측정과 측정 사이에만 열고, 닫은 뒤 30분쯤 안정시킵니다.'},
+  lidxps:{n:'뚜껑 위 아이소핑크',s:'아이소핑크 10T · 256 × 186 (귀 자리 제외) · 붙이지 않고 얹기만',d:'투명 뚜껑 위에 얹어 뚜껑으로 들어오는 열을 줄입니다. 안을 보고 싶을 때는 이것만 들어 올리면 됩니다(밀폐는 그대로).',w:'온도차 10 °C에서 뚜껑으로 들어오는 열: 한 겹 3T 약 1.6 W, 이중창 약 1.1 W, 3T + 아이소핑크 10T 약 0.7 W. 그래서 이중 뚜껑 대신 이 방법을 씁니다.'},
+  rim:{n:'뚜껑 받침 테두리',s:'아크릴 3T · 본체 256 × 186 · 안 230 × 160 · 귀 4개 (40 × 25)',d:'마당 벽 윗면에 붙이는 테두리입니다. 폼 테이프가 놓일 평평한 자리(폭 13)와 클립을 물릴 귀를 만듭니다.',w:'창 쪽(왼쪽) 끝은 마당 벽 바깥면과 맞춥니다. 밖으로 내밀면 방 플랜지 윗변과 부딪히기 때문에, 창 쪽 테두리는 마당 안쪽으로 10 들어옵니다. 벽 윗면에는 아크릴 접착제, 아이소핑크 위 부분은 양면테이프(아크릴 접착제는 아이소핑크를 녹임).'},
+  lidfoam:{n:'뚜껑 폼 테이프',s:'EVA 단면 1T × 10 mm · 둘레 약 0.8 m',d:'받침 테두리 윗면에 한 바퀴 붙입니다. 클립이 뚜껑을 누르면 폼이 눌려 판의 휜 틈을 메웁니다.',w:'아크릴끼리 직접 맞대면 판이 조금만 휘어도 틈이 생겨 공기가 새므로 폼이 필요합니다. 마당은 원래 입구로 공기가 드나드는 공간이라 조금 새도 측정 비교에는 영향이 작습니다.'},
+  lidclip:{n:'뚜껑 클립',s:'더블클립 41 mm × 4 · 무는 두께 약 7 mm (테두리 3 + 폼 1 + 뚜껑 3)',d:'앞뒤 귀에 하나씩, 테두리 귀와 뚜껑 귀를 함께 집어 폼을 누릅니다. 공구 없이 4개만 빼면 뚜껑이 열립니다.',w:'귀가 아이소핑크 바깥(93)으로 25 mm 나와 있어 클립이 벽, 단열재, 펠티어 방열판과 부딪히지 않습니다. 새는 곳이 있으면(향 연기로 확인) 클립을 6개로 늘리거나 폼을 2~3 mm로 바꿉니다.'},
+  xps:{n:'단열재',s:'아이소핑크 10T',d:'마당 앞·뒤·오른쪽·바닥 바깥을 덮습니다. 펠티어 방열판 자리와 입구·선 구멍 자리만 오려 냅니다.',w:'벽으로 들어오는 열이 6.2 W에서 약 2.4 W로 줄어 펠티어 2개로도 온도를 맞출 수 있습니다. 양면테이프로 붙입니다.'},
+  legs:{n:'다리',s:'높이 57',d:'바닥 펠티어 방열판이 들어갈 공간을 만듭니다.',w:''},
+  alplate:{n:'알루미늄 판',s:'AL3003 1T · 마당 쪽 무광 검정 도장 · 바닥 238 × 158 · 앞 230 × 150 · 뒤 205 × 130',d:'펠티어의 차가움을 넓은 면으로 퍼뜨려 마당 공기를 고르게 식힙니다. 뒤 판은 입구와 선 구멍을 피해 작게 자릅니다.',w:'검은 판은 한지와 복사로 열을 주고받지만 모든 조건에 똑같이 들어가 경향 비교에는 거의 상쇄됩니다. 펠티어 개수를 실험 내내 고정하세요.'},
+  peltier:{n:'펠티어 모듈',s:'6자리 (앞·뒤·바닥 × 2) · 펠티어 판 24 × 24, 방열판 40 × 40 · 아크릴 구멍 26 × 26',d:'알루미늄 판을 식히는 공랭식 냉각 모듈입니다(USB-C 5 V). 처음엔 2개만 켜서 마당(T3)이 10~12 °C가 되게 맞춥니다.',w:'다 켜면 너무 차가워져 판에 성에가 생기고 한지에 이슬이 맺힙니다. 펠티어 판이 방열판 위로 3 mm 이상 튀어나와야 아크릴 3T를 지나 알루미늄 판에 닿습니다(실측 필요).'},
+  fan:{n:'팬',s:'80 mm 4핀 PWM (ARCTIC P8 PWM PST) · 중심 높이 = 한지 창 중심',d:'팬 고정판의 창 쪽 면에 M4 볼트로 달아 한지 쪽으로 바람을 보냅니다. 팬과 한지 사이 약 195 mm. 전원 허브 팬 채널의 노브로 세기를 정합니다.',w:'마당이 방보다 약 2.4 Pa 높아져 한지 구멍으로 공기가 들어갑니다(겨울 바람 흉내).'},
+  fanplate:{n:'Y6 팬 고정판',s:'아크릴 3T · 100 × 126.5 · 바람 구멍 φ76 · 볼트 φ4.3 × 4 (간격 71.5) · 바닥 홈 3.2 × 100.4 깊이 1.5',d:'팬을 창 쪽 면에 M4 볼트로 다는 판입니다. 마당 바닥 판(Y1)의 홈(관통 아님)에 끼워 아크릴 접착제로 붙입니다. 창 쪽 바깥면에서 220~223, 앞뒤 가운데.',w:'홈에 1.5 mm 묻히므로 팬 구멍을 1.5 mm 올려, 팬 중심이 창 중심 높이(80)와 같습니다. 판과 오른쪽 벽 사이 20 mm 틈으로 입구 공기가 들어와 팬에 빨려 들어갑니다.'},
+  gusset:{n:'Y7 팬 고정판 보강대',s:'아크릴 3T · 직각삼각형 18 × 40 · 2개',d:'팬 고정판(Y6) 뒤쪽(오른쪽 벽 쪽) 양 끝에 하나씩 세워, 세로 변 40은 Y6 뒷면에, 밑변 18은 바닥에 함께 붙입니다.',w:'Y6를 바닥에 세워 붙이면 접착면이 판 두께(3 × 100 mm)뿐이라 팬 진동에 앞뒤로 넘어지기 쉽습니다. 보강대가 그 힘을 받아 줍니다. 판 뒤 20 mm 틈 안에 들어가 오른쪽 벽에 닿지 않습니다.'},
+  straw:{n:'빨대 정류기 (선택)',s:'빨대 φ7 × 30, 10 × 10개, 82 × 82 틀',d:'팬 바람의 소용돌이를 줄여 한지에 고르게 닿게 합니다.',w:'한지 가운데 풍속이 가장자리의 70%보다 낮을 때만 씁니다.'},
+  inlet:{n:'마당 공기 입구',s:'뒷벽 φ20 · 창 쪽 바깥면에서 228, 높이 80 · 팬 뒤쪽',d:'한지로 나간 만큼 실험실의 깨끗한 공기가 여기로 들어옵니다.',w:'팬 뒤(압력 낮은 곳)에 있어 저절로 빨려 들어옵니다. 오른쪽 벽 접착면에서 5 mm 떨어지게 위치를 정했습니다.'},
+  cable:{n:'마당 선 구멍',s:'뒷벽 높이 140 · 센서 φ10 (창 쪽에서 60) · 팬 φ12 (창 쪽에서 205)',d:'CO2 #2와 T3 선은 φ10으로 선만 통과시킨 뒤 커넥터를 압착하고, 팬 선은 4핀 커넥터째 φ12로 빼냅니다.',w:'선을 넣은 뒤 구멍은 실리콘으로 막습니다. 바깥 아이소핑크도 같은 자리를 뚫습니다.'},
+  T3:{n:'T3 마당 온도',s:'DS18B20',d:'한지 앞 마당 공기 온도를 잽니다. 방과의 온도차(약 10 °C)를 계산하는 기준입니다.',w:''},
+  co2y:{n:'CO2 센서 #2 (마당)',s:'CM1107N',d:'마당 CO2 농도를 잽니다. 감쇠 계산에서 방과의 농도차(방 − 마당)의 기준입니다.',w:''},
+  leftwall:{n:'마당 왼쪽 벽 = 창틀',s:'아크릴 3T · 창 100 × 100 · 자석 구멍 φ10.2 × 8',d:'따로 창틀을 붙이지 않고 마당 벽 자체가 창틀입니다. 바깥면에 폼 고리, 구멍에 자석 8개가 박혀 있습니다.',w:'자석은 바깥면(폼 쪽)과 평평하게 맞추고 에폭시로 고정합니다.'},
+  magnet:{n:'네오디뮴 자석 8쌍',s:'φ10 N35 · 모서리 4 + 변 가운데 4',d:'마당 벽과 방 플랜지 R의 같은 자리에 박혀 서로 당깁니다. 한지를 폼 두 장 사이에 눌러 밀폐하고, 방 위치도 저절로 맞춥니다.',w:'3T 판은 자석 사이가 넓으면 휘므로 8쌍을 모두 씁니다. 떼어 낼 때는 한쪽 모서리부터 비틀어 열면 쉽습니다. 극 방향은 미리 매직으로 표시하세요. 두께(3 또는 5 mm)는 구매 전 확정.'},
+  foam:{n:'폼 테이프 고리 (2개)',s:'EVA 단면 스펀지 1T × 10 mm · 창 중심에서 55~65',d:'마당 벽 바깥면과 방 플랜지 R 앞면에 붙여 두는 패킹입니다. 끈적이지 않는 면이 한지에 닿습니다.',w:'밀폐를 맡는 유일한 부분입니다. 모서리는 끝을 맞대 꾹 누르고, 하루 뒤부터 씁니다.'},
+  hanji:{n:'한지',s:'수제 창호지 140 × 140 · 구멍은 가운데 1개 (1~5 mm, 0.5 mm 간격)',d:'창틀(마당 벽)과 방 플랜지 사이에 그대로 끼웁니다. 풀칠도 틀도 없습니다. 방을 대기 전 폼 바깥을 마스킹테이프로 살짝 붙여 둡니다.',w:'폼이 눌러도 종이 속으로 옆으로 새는 양은 한지 정면으로 통하는 양의 0.004% 정도라 무시합니다. 조건마다 새 한지를 씁니다.'},
+  film:{n:'막힘 시험 필름',s:'OHP 필름 140 × 140',d:'한지 대신 끼워 누설을 잽니다. 출구를 닫고 CO2 반감기가 1시간 이상이면 합격입니다.',w:'이때의 히터 전력이 창틀로 새는 열의 기준값입니다.'},
+  flange:{n:'방 플랜지 R',s:'아크릴 3T · 170 × 170 · 창 100 × 100 · 자석 구멍 φ10.2 × 8',d:'방 상자 열린 면에 아크릴 접착제로 붙인 테두리입니다. 앞면에 폼 고리, 구멍에 자석 8개.',w:'방 상자(2T)의 끝면 폭 2 mm에만 붙으므로 접착제를 넉넉히 바르고, 굳은 뒤 안쪽 네 모서리에 실리콘을 둘러 CO2가 새지 않게 합니다.'},
+  roombox:{n:'방 상자',s:'아크릴 2T · 내부 150 × 100 × 100 (약 1.5 L)',d:'실험실 온도로 유지되는 방입니다. 히터 전력 = 한지로 빠져나가는 열입니다. 플랜지 R과 한 덩어리로 떼고 붙입니다.',w:'아크릴 접착제로 조립하고 안쪽 이음매에 중성 실리콘을 두릅니다. 구멍은 모두 끝벽(R5)에 있습니다.'},
+  heater:{n:'PCB 히터판',s:'60 × 60 · 68 Ω × 8 = 34 Ω · 12 V 최대 약 4.2 W',d:'방 가운데(앞뒤 가운데 면, 길이 방향 가운데)에 옆으로 세운 기판 히터입니다. 방 온도(T1)가 실험실(T4)과 같도록 20초 주기 시간 비례 + PI 제어로 켜고 끕니다.',w:'넓은 면이 미지근하게 데워져 한지에 복사열을 거의 주지 않습니다. 바이메탈은 없고, 판 중앙 DS18B20(PLATE)이 60 °C를 넘으면 펌웨어가 히터를 끕니다.'},
+  T1:{n:'T1 방 온도',s:'DS18B20 방수 프로브 φ6 · 끝벽 구멍 φ6.2에 끼움 · 바닥에서 50 · 방 안으로 약 35 mm',d:'방 공기 온도를 잽니다. 히터 제어의 기준입니다. 프로브를 끝벽 구멍에 꼭 끼워 고정하고 둘레를 실리콘으로 막습니다.',w:'히터판 옆(가로 약 26 mm 떨어짐)이라 프로브 끝을 알루미늄 테이프로 감싸 히터판 복사를 막습니다. 구멍 지름은 실제 프로브 지름을 재서 +0.2 mm로 맞춥니다.'},
+  co2r:{n:'CO2 센서 #1 (방)',s:'CM1107N',d:'방 CO2 농도를 잽니다. CO2를 짧게 넣고 섞은 뒤, 농도가 줄어드는 속도(감쇠)를 기록합니다.',w:''},
+  needle:{n:'CO2 공급 니들·튜브',s:'니들 팁 27G · 실리콘 튜브 3/5',d:'CO2 캔 → 저압 주머니(+ 추 500 g) → 솔레노이드 밸브 → 실리콘 튜브 → 끝벽 아래 구멍 φ5.5 → 니들로 CO2를 짧게 넣습니다(주입 → 1~2분 혼합 → 밸브 닫고 감쇠 기록). 튜브는 벽만 통과하고, 방 안에는 니들(약 13 mm)만 들어갑니다.',w:'방–마당 농도차 ln ΔC의 기울기 k × 방 부피(약 1.5 L) = 환기량 Q입니다. 니들 유량을 몰라도 됩니다.'},
+  outlet:{n:'방 출구',s:'끝벽 구멍 φ18 (어댑터 통로 약 16) · 천장에서 15(중심) · 앞쪽으로 24 치우침 · 관 30 mm + 가림막(종이컵 밑동 등, 지름 약 25)',d:'한지로 들어온 공기가 방 전체를 가로질러 한지 반대쪽 끝벽 위로 실험실에 나갑니다.',w:'한지에서 가장 먼 곳의 위쪽이라 지름길이 생기지 않습니다. 히터판 바로 위를 피해 앞쪽으로 치우쳐, 히터 위 더운 공기가 곧장 빠져나가지 않게 했습니다. 가림막은 실험실 바람이 드나드는 것을 막습니다.'},
+  roomcable:{n:'방 끝벽 구멍 모음',s:'끝벽(R5)에 모든 방 구멍: 출구 φ18 · T1 φ6.2 · 히터 선 φ8 · CO2 #1 선 φ8 · 니들 튜브 φ5.5',d:'방의 구멍을 한지 반대쪽 끝벽 한 장에 모았습니다. 선과 튜브가 모두 뒤로 빠져 방을 떼고 붙일 때 걸리지 않고, 실리콘 밀봉도 한 판에서 끝납니다.',w:'히터판(2선 + 판 온도 DS18B20)과 CO2 #1 선은 선만 통과시킨 뒤 커넥터를 압착하고, 모든 구멍은 실리콘으로 막습니다. 바닥·천장·옆벽은 가공이 없습니다.'},
+  stand:{n:'방 받침대',s:'나무 + 윗면 아크릴',d:'방 높이를 창에 맞추고, 방을 앞뒤로 미끄러뜨려 떼고 붙이는 받침입니다.',w:''},
+  T4:{n:'T4 실험실 온도',s:'DS18B20',d:'방과 비교할 실험실 공기 온도를 잽니다. 히터 제어의 목표값입니다.',w:''},
+};
+const VIEWS={
+  all:{t:'전체',d:'왼쪽이 방(따뜻한 실내), 오른쪽이 마당(차가운 바깥)입니다. 마당 팬이 한지 창 쪽으로 바람을 보내고, 들어온 공기는 방을 지나 뒤쪽 출구로 나갑니다.',cam:[[-440,430,560],[30,130,0]],code:'*'},
+  room:{t:'방',d:'실험실 온도로 유지되는 작은 방입니다. 히터 전력이 곧 한지로 새는 열이고, CO2를 넣은 뒤 줄어드는 속도로 환기량을 잽니다. 플랜지 R과 한 덩어리로 떼어 냅니다.',cam:[[-360,270,320],[-84,140,0]],code:'R'},
+  yard:{t:'마당',d:'펠티어로 식힌 차가운 바깥입니다. 이 화면에서는 안이 잘 보이게 뚜껑을 열고 단열재를 옅게 그렸습니다. 팬은 팬 고정판(Y6, 주황)에 달리고, 그 뒤에 보강대(Y7, 빨강) 2개가 받칩니다. 왼쪽 벽이 그대로 창틀이고, 뒷벽에 입구와 선 구멍이 있습니다.',cam:[[470,520,330],[175,130,0]],code:'Y'},
+  lid:{t:'마당 뚜껑',d:'받침 테두리(벽 위에 접착) · 폼 테이프 · 투명 뚜껑 3T · 앞뒤 귀의 더블클립 4개 · 위에 얹는 아이소핑크 10T. 클립을 빼고 들어 올리면 마당 안을 점검할 수 있습니다. "뚜껑 열기 / 닫기"를 눌러 보세요.',cam:[[330,540,460],[120,232,0]],code:'U'},
+  joint:{t:'연결부 (창)',d:'마당 벽(창틀) · 폼 · 한지 · 폼 · 방 플랜지 R. 자석 8쌍이 서로 당겨 한지를 누르고 밀폐합니다. 한지는 풀칠 없이 끼우기만 합니다.',cam:[[-230,230,250],[-4,140,0]],code:'J'},
+};
+const SHORT={rim:'3T 256×186',lidfoam:'EVA 1T',lidclip:'41 mm ×4',yardbox:'3T',lid:'3T',lidxps:'10T',xps:'10T',legs:'57',alplate:'1T',peltier:'×6',fan:'80',fanplate:'Y6 3T',gusset:'Y7 ×2',straw:'선택',inlet:'φ20',cable:'φ10 · φ12',T3:'DS18B20',co2y:'CM1107N',leftwall:'3T',magnet:'φ10 ×16',foam:'EVA 1T',hanji:'140×140',film:'시험용',flange:'3T 170',roombox:'2T',heater:'34 Ω',T1:'φ6 프로브',co2r:'CM1107N',needle:'27G',outlet:'φ18',roomcable:'끝벽 ×5',stand:'',T4:'DS18B20'};
+
+/* ---------------- state ---------------- */
+let view='all',hole=3,strawOn=false,flowOn=true,showLbl=true,showDim=true,cur=null;
+let sep=0,lift=0,ex=0,lidT=0;
+function inView(o){const tg=o.userData.tags;if(!tg)return true;const c=VIEWS[view].code;return c==='*'?true:tg.includes(c);}
+function vis(o){let p=o;while(p){if(p.visible===false)return false;p=p.parent;}return true;}
+function refresh(){
+  tagged.forEach(o=>{let v=inView(o)&&(!o.userData.cond||o.userData.cond());
+    const k=o.userData.kind;if(k==='lbl')v=v&&showLbl;if(k==='dim'||k==='dimline')v=v&&showDim;o.visible=v;});
+  updHelper();}
+function apply(){
+  gRoom.position.x=-90*sep-40*ex;
+  gH.position.x=-18*ex; gH.position.y=200*lift;
+  const c=Math.min(1,lidT/.35), l=Math.max(0,(lidT-.35)/.65);
+  clipGs.forEach(g=>{g.position.z=40*c;});
+  gLid.position.y=140*l; gLid.position.x=0; gLid.rotation.z=0;
+  refresh();}
+
+/* ---------------- info & list ---------------- */
+const infoEl=document.getElementById('info'),plist=document.getElementById('plist');let helper=null;
+function clearHelper(){if(helper){scene.remove(helper);helper=null;}}
+function updHelper(){clearHelper();if(!cur)return;const objs=pickable.filter(o=>o.userData.part===cur&&vis(o));if(!objs.length)return;
+  const box=new THREE.Box3();objs.forEach(o=>box.expandByObject(o));box.expandByScalar(1.5);helper=new THREE.Box3Helper(box,new THREE.Color(css('--accent')||'#B8452F'));scene.add(helper);}
+function select(k){const v=INFO[k];if(!v)return;cur=k;
+  if(k==='film'&&hole!==-1)setHole(-1);if(k==='hanji'&&hole===-1)setHole(3);
+  if(k==='straw'&&!strawOn){strawOn=true;document.getElementById('tStraw').checked=true;}
+  infoEl.innerHTML='<h2>선택한 부품</h2><h3></h3><div class="spec"></div><p></p><p class="why"></p>';
+  infoEl.querySelector('h3').textContent=v.n;infoEl.querySelector('.spec').textContent=v.s;infoEl.querySelector('p').textContent=v.d;
+  const why=infoEl.querySelector('.why');if(v.w)why.textContent=v.w;else why.remove();
+  plist.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.k===k?'true':'false'));
+  refresh();}
+function buildList(){plist.innerHTML='';const keys=[];
+  pickable.forEach(o=>{if(inView(o)&&!keys.includes(o.userData.part))keys.push(o.userData.part);});
+  keys.filter(k=>INFO[k]).forEach(k=>{const li=document.createElement('li');const b=document.createElement('button');b.dataset.k=k;
+    const a=document.createElement('span');a.textContent=INFO[k].n;const c=document.createElement('span');c.textContent=SHORT[k]||'';b.append(a,c);
+    b.setAttribute('aria-current',k===cur?'true':'false');b.addEventListener('click',()=>select(k));li.appendChild(b);plist.appendChild(li);});
+  document.getElementById('plTitle').textContent=VIEWS[view].t+' 부품 ('+keys.length+') · 눌러서 보기';}
+
+/* ---------------- view switching ---------------- */
+let tw=null;function fly(p,t){tw={p0:camera.position.clone(),t0:controls.target.clone(),p1:new THREE.Vector3(...p),t1:new THREE.Vector3(...t),s:performance.now(),d:reduce?1:800};}
+function setView(v,instant){if(!VIEWS[v])v='all';view=v;
+  document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===v?'true':'false'));
+  document.getElementById('viewTitle').textContent=VIEWS[v].t;document.getElementById('viewDesc').textContent=VIEWS[v].d;
+  document.getElementById('tagA').textContent=VIEWS[v].t;
+  document.querySelectorAll('.only').forEach(e=>e.classList.toggle('on',e.dataset.only===v));
+  if(v!=='joint'&&ex>0){ex=0;}
+  const c=VIEWS[v].cam;if(instant){camera.position.set(...c[0]);controls.target.set(...c[1]);}else fly(c[0],c[1]);
+  if(cur&&!pickable.some(o=>o.userData.part===cur&&inView(o)))cur=null;
+  const wantOpen=(v==='yard');
+  mat.xps.opacity=wantOpen?.12:.55;
+  if(wantOpen!==(lidT>.5)){if(instant){lidT=wantOpen?1:0;}else{const f=lidT;tween(f,wantOpen?1:0,900,x=>{lidT=x;apply();});}}
+  apply();buildList();
+  try{history.replaceState(null,'',v==='all'?location.pathname+location.search:'#'+v);}catch(e){}
+  if(!cur){infoEl.innerHTML='<h2>선택한 부품</h2><p class="why">3D 화면이나 아래 목록에서 부품을 누르세요.</p>';}}
+document.querySelectorAll('#tabs button').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.v)));
+window.addEventListener('hashchange',()=>setView(location.hash.slice(1)));
+
+/* ---------------- hole / toggles ---------------- */
+function setHole(h){hole=h;holeM.forEach(m=>m.scale.setScalar(Math.max(h,.01)));
+  document.getElementById('tagB').textContent=h<0?'막힘 시험 필름':(h===0?'한지: 구멍 없음':'한지: 구멍 '+h+' mm');
+  document.querySelectorAll('#holeSeg button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===h?'true':'false'));refresh();}
+document.querySelectorAll('#holeSeg button').forEach(b=>b.addEventListener('click',()=>setHole(+b.dataset.v)));
+document.getElementById('tCut').addEventListener('change',e=>{allMats.forEach(m=>{m.clippingPlanes=e.target.checked?[clipPlane]:null;m.needsUpdate=true;});});
+document.getElementById('tFlow').addEventListener('change',e=>{flowOn=e.target.checked;refresh();});
+document.getElementById('tStraw').addEventListener('change',e=>{strawOn=e.target.checked;refresh();});
+const sealMat=new THREE.MeshBasicMaterial({color:0xff5a36});
+document.getElementById('tSeal').addEventListener('change',e=>{[...foamY,...foamR,...lidFoam].forEach(m=>m.material=e.target.checked?sealMat:mat.foam);});
+document.getElementById('tLbl').addEventListener('change',e=>{showLbl=e.target.checked;refresh();});
+document.getElementById('tDim').addEventListener('change',e=>{showDim=e.target.checked;refresh();});
+
+/* ---------------- animations ---------------- */
+const anims=[];
+function tween(from,to,dur,set,done){const s=performance.now();anims.push({step(now){const k=reduce?1:Math.min(1,(now-s)/dur);const e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;set(from+(to-from)*e);if(k>=1){done&&done();return true;}return false;}});}
+function chain(list,i){i=i||0;if(i>=list.length)return;const [dur,fn,before]=list[i];before&&before();tween(0,1,dur,fn,()=>setTimeout(()=>chain(list,i+1),reduce?0:150));}
+const tag=document.getElementById('tagA');let busy=false;
+document.getElementById('bSwap').onclick=()=>{if(busy)return;busy=true;
+  const order=[-1,0,1,1.5,2,2.5,3,3.5,4,4.5,5];const nh=order[(order.indexOf(hole)+1)%order.length];const e0=ex,s0=sep;
+  chain([
+    [500,v=>{ex=e0*(1-v);apply();}],
+    [800,v=>{sep=s0+(1-s0)*v;apply();},()=>tag.textContent='① 방을 떼기 (모서리부터 비틀어)'],
+    [800,v=>{lift=v;apply();},()=>tag.textContent='② 쓴 한지 떼기'],
+    [800,v=>{lift=1-v;apply();},()=>{tag.textContent='③ 새 한지 놓고 테이프';setHole(nh);}],
+    [900,v=>{sep=1-v;apply();},()=>tag.textContent='④ 방을 정면에서 대기'],
+    [1,()=>{},()=>{tag.textContent=VIEWS[view].t;busy=false;}],
+  ]);};
+document.getElementById('bSep').onclick=()=>{if(busy)return;const to=sep>.5?0:1;tween(sep,to,900,v=>{sep=v;apply();},()=>tag.textContent=to?'방을 뗀 상태':VIEWS[view].t);};
+document.getElementById('bLid').onclick=()=>{if(busy)return;const to=lidT>.5?0:1;
+  tag.textContent=to?'클립 빼고 뚜껑 들기':'뚜껑 덮고 클립 끼우기';
+  tween(lidT,to,1300,v=>{lidT=v;apply();},()=>tag.textContent=to?'뚜껑 연 상태':VIEWS[view].t);};
+document.getElementById('bExp').onclick=()=>{if(busy)return;const to=ex>.5?0:1;tween(ex,to,800,v=>{ex=v;apply();});};
+
+/* ---------------- picking ---------------- */
+const ray=new THREE.Raycaster(),mouse=new THREE.Vector2();let down=null;
+renderer.domElement.addEventListener('pointerdown',e=>{down=[e.clientX,e.clientY];});
+renderer.domElement.addEventListener('pointerup',e=>{if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>5)return;
+  const r=renderer.domElement.getBoundingClientRect();mouse.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(mouse,camera);
+  const hits=ray.intersectObjects(pickable.filter(vis),false);const cut=document.getElementById('tCut').checked;
+  const ok=x=>!(cut&&x.point.z>0);
+  const h=hits.find(x=>ok(x)&&!(x.object.material.transparent&&x.object.material.opacity<.3))||hits.find(ok);
+  if(h)select(h.object.userData.part);});
+
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h);lr.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(stage);resize();
+const tmp=new THREE.Vector3();
+function tick(now){for(let i=anims.length-1;i>=0;i--)if(anims[i].step(now))anims.splice(i,1);
+  if(tw){const k=Math.min(1,(now-tw.s)/tw.d);const e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;camera.position.lerpVectors(tw.p0,tw.p1,e);controls.target.lerpVectors(tw.t0,tw.t1,e);if(k>=1)tw=null;}
+  if(gFlow.visible){const sp=reduce?0:0.00006;dots.forEach(d=>{d.u=(d.u+sp*16)%1;flowPath.getPointAt(d.u,tmp);
+      const jit=Math.sin(d.u*Math.PI);d.m.position.set(tmp.x+d.j.x*jit,tmp.y+d.j.y*jit,tmp.z+d.j.z*jit);
+      if(tmp.x<-4&&sep<.05){d.m.material=mat.flowWarm;}else d.m.material=mat.flow;
+      d.m.visible=!(sep>.05&&tmp.x<0);});}
+  controls.update();renderer.render(scene,camera);lr.render(scene,camera);requestAnimationFrame(tick);}
+setHole(3);setView((location.hash||'').slice(1)||'all',true);requestAnimationFrame(tick);
+})();
+</script>
+
+</body>
+</html>
